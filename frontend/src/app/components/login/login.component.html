@@ -1,0 +1,87 @@
+<!-- ============================================================
+     login.component.html
+     ============================================================ -->
+
+<div class="auth-page">
+
+  <!-- Left panel (decorative) -->
+  <div class="auth-panel anim-fade-in">
+    <div class="auth-panel__content">
+      <div class="auth-panel__logo">
+        <i class="fa-solid fa-leaf"></i>
+      </div>
+      <h2 class="auth-panel__title">Welcome back to GoGreen</h2>
+      <p class="auth-panel__sub">The sustainable marketplace for conscious shoppers and eco-friendly sellers.</p>
+      <div class="auth-panel__features">
+        <div class="auth-panel__feat">
+          <i class="fa-solid fa-recycle"></i>
+          <span>Browse 1000+ recycled products</span>
+        </div>
+        <div class="auth-panel__feat">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Secure buyer protection</span>
+        </div>
+        <div class="auth-panel__feat">
+          <i class="fa-solid fa-leaf"></i>
+          <span>Track your eco impact</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right panel (form) -->
+  <div class="auth-form-side anim-scale-in">
+    <div class="auth-card">
+      <div class="auth-card__header">
+        <h1 class="auth-card__title">Sign in</h1>
+        <p class="auth-card__sub">
+          New here? <a routerLink="/register" class="auth-link">Create an account</a>
+        </p>
+      </div>
+
+      <form class="auth-form" (submit)="logIn()">
+        <div class="form-group">
+          <label class="form-label" for="username">Username</label>
+          <div class="input-wrap">
+            <i class="fa-regular fa-user input-icon"></i>
+            <input
+              class="form-control form-control--icon"
+              type="text"
+              id="username"
+              placeholder="your_username"
+              name="username"
+              [(ngModel)]="username"
+              autocomplete="username"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input
+              class="form-control form-control--icon"
+              type="password"
+              id="password"
+              placeholder="••••••••"
+              name="password"
+              [(ngModel)]="password"
+              autocomplete="current-password"
+            />
+          </div>
+        </div>
+
+        <div class="alert-error" *ngIf="error">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          {{ error }}
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg auth-submit">
+          Sign in <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,214 @@
+/* ============================================================
+   product-detail.component.css
+   ============================================================ */
+
+.detail-page {
+  min-height: 80vh;
+  padding: 48px 28px 80px;
+}
+.detail-page__inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Breadcrumb */
+.breadcrumb { margin-bottom: 32px; }
+.breadcrumb__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #607868;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  background: #f1faf2;
+  border: 1px solid #d4e5d5;
+  transition: all 220ms ease;
+}
+.breadcrumb__link:hover {
+  color: #2e7d32;
+  background: #e8f5e9;
+  transform: translateX(-2px);
+}
+
+/* Layout */
+.detail-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: start;
+}
+
+/* Image */
+.detail-img-panel {}
+.detail-img-wrap {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #e8f5e9;
+  box-shadow: 0 16px 48px rgba(46,125,50,.14);
+}
+.detail-img {
+  height: 460px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  transition: transform 500ms ease;
+}
+.detail-img-wrap:hover .detail-img { transform: scale(1.03); }
+.detail-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 60%, rgba(27,77,30,.15));
+}
+.detail-img-tags {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+/* Info */
+.detail-info { padding-top: 8px; }
+.detail-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  color: #1b4d1e;
+  line-height: 1.1;
+  margin-bottom: 10px;
+  letter-spacing: -0.02em;
+}
+.detail-meta {
+  font-size: 13px;
+  color: #607868;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.detail-price-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.detail-price {
+  font-family: 'Syne', sans-serif;
+  font-size: 42px;
+  font-weight: 800;
+  color: #2e7d32;
+  line-height: 1;
+}
+.detail-availability {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #607868;
+}
+
+.detail-desc-section {}
+.detail-desc-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1b4d1e;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+  font-family: 'DM Sans', sans-serif;
+}
+.detail-desc {
+  font-size: 15px;
+  color: #3d5c3e;
+  line-height: 1.75;
+}
+
+.detail-actions { margin-top: 28px; }
+.detail-cta {
+  width: 100%;
+  justify-content: center;
+  font-size: 16px;
+  padding: 16px;
+  border-radius: 14px;
+}
+.detail-cta--in-cart {
+  background: #e8f5e9 !important;
+  color: #2e7d32 !important;
+  border: 1.5px solid #c8e6c9;
+  cursor: default;
+}
+.detail-cta--in-cart:hover { transform: none; box-shadow: none; }
+.detail-login-hint {
+  font-size: 13px;
+  color: #607868;
+  text-align: center;
+  margin-top: 12px;
+}
+.detail-login-hint a { color: #2e7d32; font-weight: 500; }
+
+/* Trust badges */
+.trust-badges {
+  display: flex;
+  gap: 16px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #e8f0e9;
+  flex-wrap: wrap;
+}
+.trust-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 80px;
+}
+.trust-badge i {
+  font-size: 20px;
+  color: #2e7d32;
+}
+.trust-badge span {
+  font-size: 12px;
+  color: #607868;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Skeleton */
+.detail-skeleton {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+}
+.detail-skeleton__img { height: 460px; border-radius: 22px; }
+.detail-skeleton__info { padding-top: 8px; }
+
+/* Not found */
+.not-found {
+  text-align: center;
+  padding: 100px 20px;
+}
+.not-found__icon {
+  font-size: 56px;
+  color: #c8e6c9;
+  margin-bottom: 20px;
+  display: block;
+}
+.not-found h2 {
+  font-size: 28px;
+  color: #1b4d1e;
+  margin-bottom: 8px;
+}
+.not-found p {
+  color: #607868;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 768px) {
+  .detail-layout { grid-template-columns: 1fr; gap: 28px; }
+  .detail-skeleton { grid-template-columns: 1fr; }
+  .detail-img { height: 280px; }
+  .detail-name { font-size: 28px; }
+  .detail-price { font-size: 32px; }
+}

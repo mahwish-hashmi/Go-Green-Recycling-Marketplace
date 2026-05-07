@@ -1,0 +1,134 @@
+<!-- ============================================================
+     cart.component.html  —  Cart Page
+     ============================================================ -->
+
+<div class="cart-page">
+  <div class="cart-page__inner">
+
+    <!-- Header -->
+    <div class="cart-header anim-fade-up">
+      <div>
+        <span class="section-label">Your selection</span>
+        <h1 class="cart-header__title">Shopping cart</h1>
+      </div>
+      <a routerLink="/shop" class="btn btn-outline btn-sm">
+        <i class="fa-solid fa-arrow-left"></i> Continue shopping
+      </a>
+    </div>
+
+    <!-- Empty cart -->
+    <div class="cart-empty anim-scale-in" *ngIf="cartItems && cartItems.length === 0">
+      <div class="cart-empty__icon">
+        <i class="fa-solid fa-basket-shopping"></i>
+      </div>
+      <h2>Your cart is empty</h2>
+      <p>Looks like you haven't added any eco-friendly products yet.</p>
+      <a routerLink="/shop" class="btn btn-primary btn-lg">
+        <i class="fa-solid fa-seedling"></i> Start shopping
+      </a>
+    </div>
+
+    <!-- Cart layout -->
+    <div class="cart-layout" *ngIf="cartItems && cartItems.length > 0">
+
+      <!-- Items list -->
+      <div class="cart-items anim-fade-up">
+
+        <div class="cart-item stagger" *ngFor="let item of cartItems; let i = index">
+          <!-- Product image placeholder -->
+          <div class="cart-item__img">
+            <i class="fa-solid fa-seedling cart-item__img-icon"></i>
+          </div>
+
+          <!-- Name + meta -->
+          <div class="cart-item__info">
+            <a routerLink="/shop/products/{{ item.product.id }}" class="cart-item__name">
+              {{ item.product.name }}
+            </a>
+            <div class="cart-item__meta">
+              Added {{ item.addedOn | date: 'MMM d, yyyy' }}
+            </div>
+            <div class="badge badge-green" style="margin-top:8px;">
+              <i class="fa-solid fa-leaf"></i> Eco certified
+            </div>
+          </div>
+
+          <!-- Quantity controls -->
+          <div class="cart-item__qty">
+            <button
+              class="qty-btn qty-btn--minus"
+              (click)="decreaseQuantity(item)"
+              title="Decrease quantity"
+            >
+              <i class="fa-solid fa-minus"></i>
+            </button>
+            <span class="qty-value">{{ item.quantity }}</span>
+            <button
+              class="qty-btn qty-btn--plus"
+              (click)="increaseQuantity(item)"
+              title="Increase quantity"
+            >
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+
+          <!-- Unit price -->
+          <div class="cart-item__unit-price">
+            <div class="cart-item__price-label">Unit</div>
+            <div class="cart-item__price">${{ item.product.price | number:'1.2-2' }}</div>
+          </div>
+
+          <!-- Line total -->
+          <div class="cart-item__total">
+            <div class="cart-item__price-label">Total</div>
+            <div class="cart-item__price cart-item__price--total">${{ item.totalPrice | number:'1.2-2' }}</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Order summary -->
+      <aside class="cart-summary anim-fade-up" style="animation-delay:.1s">
+        <div class="cart-summary__card">
+          <h2 class="cart-summary__title">Order summary</h2>
+
+          <div class="summary-line">
+            <span>Subtotal ({{ cartItems.length }} items)</span>
+            <span>${{ getTotal() | number:'1.2-2' }}</span>
+          </div>
+          <div class="summary-line">
+            <span>Eco delivery</span>
+            <span class="text-green">Free</span>
+          </div>
+          <div class="summary-line">
+            <span>Carbon offset</span>
+            <span class="text-green">Included</span>
+          </div>
+
+          <hr class="divider" style="margin:16px 0;">
+
+          <div class="summary-line summary-line--total">
+            <span>Total</span>
+            <span>${{ getTotal() | number:'1.2-2' }}</span>
+          </div>
+
+          <button class="btn btn-primary btn-lg checkout-btn">
+            <i class="fa-solid fa-lock"></i> Secure checkout
+          </button>
+
+          <div class="summary-trust">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Protected by GoGreen buyer guarantee</span>
+          </div>
+
+          <div class="summary-eco">
+            <i class="fa-solid fa-leaf"></i>
+            <span>This order saves <strong>~2.4kg CO₂</strong> vs new products</span>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,134 @@
+<!-- ============================================================
+     product-list.component.html  —  Hero + Product Grid
+     ============================================================ -->
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="hero__bg-orbs">
+    <div class="orb orb--1"></div>
+    <div class="orb orb--2"></div>
+    <div class="orb orb--3"></div>
+  </div>
+  <div class="hero__inner">
+    <div class="hero__content anim-fade-up">
+      <span class="section-label">🌿 Sustainable marketplace</span>
+      <h1 class="hero__title">
+        Recycling made<br>
+        <span class="hero__title-accent">beautifully easy.</span>
+      </h1>
+      <p class="hero__sub">
+        Discover eco-friendly products from conscious sellers. Every purchase
+        reduces waste and supports a greener planet.
+      </p>
+      <div class="hero__actions">
+        <a routerLink="/shop" class="btn btn-primary btn-lg">
+          <i class="fa-solid fa-seedling"></i> Browse products
+        </a>
+        <a routerLink="/register" class="btn btn-outline btn-lg">
+          Join for free
+        </a>
+      </div>
+    </div>
+    <div class="hero__stats anim-fade-up" style="animation-delay:.15s">
+      <div class="stat-pill">
+        <i class="fa-solid fa-recycle stat-pill__icon"></i>
+        <div>
+          <div class="stat-pill__num">12,400+</div>
+          <div class="stat-pill__label">Items recycled</div>
+        </div>
+      </div>
+      <div class="stat-pill">
+        <i class="fa-solid fa-users stat-pill__icon"></i>
+        <div>
+          <div class="stat-pill__num">3,800+</div>
+          <div class="stat-pill__label">Active members</div>
+        </div>
+      </div>
+      <div class="stat-pill">
+        <i class="fa-solid fa-leaf stat-pill__icon"></i>
+        <div>
+          <div class="stat-pill__num">98%</div>
+          <div class="stat-pill__label">Eco certified</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Products section ── -->
+<section class="products-section">
+  <div class="products-section__inner">
+
+    <!-- Header row -->
+    <div class="products-header">
+      <div>
+        <span class="section-label">Our collection</span>
+        <h2 class="products-header__title">
+          {{ term ? 'Results for "' + term + '"' : 'All products' }}
+        </h2>
+      </div>
+      <span class="products-count" *ngIf="products">
+        {{ filteredCount }} items
+      </span>
+    </div>
+
+    <!-- Loading skeletons -->
+    <div class="product-grid stagger" *ngIf="!products">
+      <div class="product-skeleton" *ngFor="let s of [1,2,3,4,5,6]">
+        <div class="product-skeleton__img skeleton"></div>
+        <div class="product-skeleton__body">
+          <div class="skeleton" style="height:14px;width:60%;margin-bottom:8px;"></div>
+          <div class="skeleton" style="height:22px;width:40%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product grid -->
+    <div class="product-grid stagger" *ngIf="products">
+      <ng-container *ngFor="let product of products; let i = index">
+        <div
+          class="product-card anim-fade-up"
+          *ngIf="product.name.toLowerCase().includes(term.toLowerCase())"
+          [style.animation-delay]="(i * 0.06) + 's'"
+          (mouseenter)="hoveredId = product.id"
+          (mouseleave)="hoveredId = null"
+        >
+          <!-- Image -->
+          <div class="product-card__img-wrap">
+            <div
+              class="product-card__img"
+              [style.backgroundImage]="'url(' + product.imageUrl + ')'"
+            ></div>
+            <span class="product-card__eco-badge">
+              <i class="fa-solid fa-leaf"></i> Eco
+            </span>
+          </div>
+
+          <!-- Body -->
+          <div class="product-card__body">
+            <h3 class="product-card__name">{{ product.name }}</h3>
+            <p class="product-card__desc">{{ product.description | slice:0:60 }}{{ product.description?.length > 60 ? '…' : '' }}</p>
+            <div class="product-card__footer">
+              <span class="product-card__price">${{ product.price | number:'1.2-2' }}</span>
+              <a
+                routerLink="/shop/products/{{ product.id }}"
+                class="btn btn-primary btn-sm product-card__btn"
+              >
+                View <i class="fa-solid fa-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="products && filteredCount === 0">
+      <i class="fa-solid fa-magnifying-glass empty-state__icon"></i>
+      <h3>No products found</h3>
+      <p>Try a different search term</p>
+      <a routerLink="/shop" class="btn btn-outline">Clear search</a>
+    </div>
+
+  </div>
+</section>

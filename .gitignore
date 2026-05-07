@@ -1,0 +1,14 @@
+node_modules/
+frontend/node_modules/
+
+# Angular build
+dist/
+
+# Java build
+target/
+
+# OS files
+.DS_Store
+
+# VS Code
+.vscode/

@@ -1,0 +1,92 @@
+<!-- ============================================================
+     app.component.html  —  Navbar + Router Outlet
+     ============================================================ -->
+<div class="app-shell">
+
+  <!-- ── Navbar ── -->
+  <nav class="navbar" [class.navbar--scrolled]="scrolled">
+    <div class="navbar__inner">
+
+      <!-- Brand -->
+      <a class="navbar__brand" routerLink="/shop">
+        <span class="navbar__brand-icon">
+          <i class="fa-solid fa-leaf"></i>
+        </span>
+        <span class="navbar__brand-text">Go<strong>Green</strong></span>
+      </a>
+
+      <!-- Nav links -->
+      <ul class="navbar__links">
+        <li>
+          <a class="navbar__link" routerLink="/shop" routerLinkActive="navbar__link--active">
+            <i class="fa-solid fa-seedling"></i> Shop
+          </a>
+        </li>
+        <li *ngIf="!isTokenThere">
+          <a class="navbar__link" routerLink="/register" routerLinkActive="navbar__link--active">
+            Register
+          </a>
+        </li>
+        <li *ngIf="!isTokenThere">
+          <a class="navbar__link navbar__link--cta" routerLink="/login" routerLinkActive="navbar__link--active">
+            Sign in
+          </a>
+        </li>
+        <li *ngIf="isTokenThere">
+          <a class="navbar__link" routerLink="/account" routerLinkActive="navbar__link--active">
+            <i class="fa-regular fa-circle-user"></i> Account
+          </a>
+        </li>
+        <li *ngIf="isTokenThere">
+          <a class="navbar__link navbar__link--cart" routerLink="/cart" routerLinkActive="navbar__link--active">
+            <i class="fa-solid fa-basket-shopping"></i> Cart
+          </a>
+        </li>
+      </ul>
+
+      <button
+      *ngIf="isTokenThere"
+      class="logout-btn"
+      (click)="logout()">
+      Logout
+    </button>
+
+      <!-- Search -->
+      <form class="navbar__search" (submit)="search()">
+        <i class="fa-solid fa-magnifying-glass navbar__search-icon"></i>
+        <input
+          class="navbar__search-input"
+          type="search"
+          placeholder="Search eco products…"
+          [(ngModel)]="term"
+          name="term"
+          aria-label="Search products"
+        />
+        <button class="navbar__search-btn" type="submit">Search</button>
+      </form>
+
+    </div>
+  </nav>
+
+  <!-- ── Page content ── -->
+  <main class="page-wrapper">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- ── Footer ── -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <div class="footer__brand">
+        <span class="footer__brand-icon"><i class="fa-solid fa-leaf"></i></span>
+        <span class="footer__brand-text">Go<strong>Green</strong></span>
+      </div>
+      <p class="footer__copy">© 2024 GoGreen · Sustainable marketplace for a better planet 🌍</p>
+      <div class="footer__links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+</div>
