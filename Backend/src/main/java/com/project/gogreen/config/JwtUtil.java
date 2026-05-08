@@ -1,5 +1,7 @@
 package com.project.gogreen.config;
 
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,26 +19,20 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-
 @Component
 public class JwtUtil implements Serializable {
 
     private static final long serialVersionUID = -2550185165626007488L;
-    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60; // 5 hours
+    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
 
     @Value("${jwt.secret}")
     private String secret;
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
-        // Ensure key is at least 256 bits for HS512
-        if (keyBytes.length < 64) {
-            byte[] paddedKey = new byte[64];
-            System.arraycopy(keyBytes, 0, paddedKey, 0, keyBytes.length);
-            return Keys.hmacShaKeyFor(paddedKey);
-        }
+        byte[] keyBytes = new byte[64];
+        byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);
+        System.arraycopy(secretBytes, 0, keyBytes, 0,
+                Math.min(secretBytes.length, keyBytes.length));
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
@@ -70,14 +66,10 @@ public class JwtUtil implements Serializable {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-
-        // Embed role in token
         String role = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .findFirst()
-                .orElse("ROLE_BUYER");
+                .findFirst().orElse("ROLE_BUYER");
         claims.put("role", role);
-
         return doGenerateToken(claims, userDetails.getUsername());
     }
 
@@ -92,7 +84,7 @@ public class JwtUtil implements Serializable {
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
-        final String username = getUsernameFromToken(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        return getUsernameFromToken(token).equals(userDetails.getUsername())
+                && !isTokenExpired(token);
     }
 }

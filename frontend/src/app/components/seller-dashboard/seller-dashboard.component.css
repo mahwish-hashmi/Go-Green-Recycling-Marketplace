@@ -1,0 +1,324 @@
+/* seller-dashboard.component.css */
+
+/* ── Toast ── */
+.sd-toast {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 9999;
+  background: #2e7d32;
+  color: white;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 8px 32px rgba(0,0,0,.25);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slideUp 0.3s ease;
+}
+.sd-toast--error { background: #c62828; }
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ── Modal ── */
+.sd-modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+.sd-modal {
+  background: white;
+  border-radius: 18px;
+  padding: 36px 32px;
+  max-width: 380px;
+  width: 90%;
+  text-align: center;
+  animation: scaleIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.sd-modal__icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #ffebee;
+  color: #c62828;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+.sd-modal h3 { font-size: 20px; font-weight: 800; color: #1b4d1e; margin-bottom: 8px; }
+.sd-modal p { font-size: 14px; color: #607868; margin-bottom: 24px; }
+.sd-modal__actions { display: flex; gap: 12px; justify-content: center; }
+
+.btn-danger-solid {
+  background: #c62828;
+  color: white;
+  border-color: #c62828;
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-danger-solid:hover { background: #b71c1c; }
+
+/* ── Shell layout ── */
+.sd-shell {
+  display: flex;
+  min-height: 100vh;
+  background: #f8faf8;
+}
+
+/* ── Sidebar ── */
+.sd-sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background: #1b4d1e;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  gap: 4px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.sd-sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 24px;
+  color: white;
+  font-size: 20px;
+  font-weight: 800;
+  font-family: 'Syne', sans-serif;
+}
+.sd-brand-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.sd-nav { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+.sd-nav__label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  padding: 12px 12px 6px;
+}
+.sd-nav__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.sd-nav__item:hover { background: rgba(255,255,255,0.1); color: white; }
+.sd-nav__item--active { background: rgba(255,255,255,0.15); color: white; font-weight: 600; }
+.sd-nav__item--danger { color: rgba(255,150,150,0.8); }
+.sd-nav__item--danger:hover { background: rgba(255,0,0,0.1); color: #ff8a80; }
+
+/* ── Main area ── */
+.sd-main {
+  flex: 1;
+  padding: 36px 40px;
+  max-width: 1100px;
+}
+
+.sd-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.sd-header__title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1b4d1e;
+  font-family: 'Syne', sans-serif;
+}
+.sd-header__sub { font-size: 14px; color: #607868; margin-top: 4px; }
+
+/* ── Analytics cards ── */
+.sd-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.sd-card {
+  background: white;
+  border: 1px solid #e8f0e9;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(46,125,50,.06);
+}
+.sd-card__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.sd-card__icon--green { background: #e8f5e9; color: #2e7d32; }
+.sd-card__icon--blue  { background: #e3f2fd; color: #1565c0; }
+.sd-card__icon--amber { background: #fff8e1; color: #e65100; }
+.sd-card__icon--purple{ background: #f3e5f5; color: #6a1b9a; }
+.sd-card__num {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: #1b4d1e;
+  line-height: 1;
+}
+.sd-card__label { font-size: 12px; color: #607868; margin-top: 3px; }
+
+/* ── Add/Edit Form ── */
+.sd-form-panel {
+  background: white;
+  border: 1.5px solid #d4e5d5;
+  border-radius: 18px;
+  margin-bottom: 28px;
+  overflow: hidden;
+}
+.sd-form-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  border-bottom: 1px solid #e8f0e9;
+}
+.sd-form-panel__header h2 { font-size: 18px; font-weight: 800; color: #1b4d1e; font-family: 'Syne', sans-serif; }
+.sd-form-body {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.sd-form-body .form-control { border: 1.5px solid #e0eee1; }
+.sd-form-body textarea.form-control { resize: vertical; }
+.sd-form-actions { display: flex; gap: 12px; justify-content: flex-end; padding-top: 4px; }
+
+/* ── Products table ── */
+.sd-table-panel {
+  background: white;
+  border: 1px solid #e8f0e9;
+  border-radius: 18px;
+  overflow: hidden;
+}
+.sd-table-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  border-bottom: 1px solid #e8f0e9;
+}
+.sd-table-panel__header h2 { font-size: 18px; font-weight: 800; color: #1b4d1e; font-family: 'Syne', sans-serif; }
+
+.sd-loading, .sd-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #607868;
+  font-size: 15px;
+}
+.sd-empty__icon { font-size: 48px; color: #c8e6c9; margin-bottom: 16px; display: block; }
+.sd-empty h3 { font-size: 20px; font-weight: 700; color: #1b4d1e; margin-bottom: 8px; }
+.sd-empty p { margin-bottom: 20px; }
+
+.sd-table { width: 100%; border-collapse: collapse; }
+.sd-table th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9aada4;
+  padding: 12px 16px;
+  background: #fafcfa;
+  border-bottom: 1px solid #e8f0e9;
+}
+.sd-table td {
+  padding: 16px;
+  border-bottom: 1px solid #f0f4f0;
+  font-size: 14px;
+  color: #3d5c3e;
+  vertical-align: middle;
+}
+.sd-table tr:last-child td { border-bottom: none; }
+.sd-table tr:hover td { background: #fafcfa; }
+
+.sd-table__product { display: flex; align-items: center; gap: 12px; }
+.sd-table__img {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #e8f5e9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #66bb6a;
+  flex-shrink: 0;
+}
+.sd-table__name { font-weight: 600; color: #1b4d1e; font-size: 14px; }
+.sd-table__desc { color: #607868; max-width: 240px; }
+.sd-table__price { font-weight: 700; color: #2e7d32; font-size: 15px; }
+.sd-table__actions { display: flex; gap: 6px; }
+
+.sd-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.sd-badge--active { background: #e8f5e9; color: #2e7d32; }
+
+/* ── Animations ── */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.anim-scale-in { animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .sd-shell { flex-direction: column; }
+  .sd-sidebar { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; position: relative; padding: 16px; }
+  .sd-main { padding: 24px 16px; }
+  .sd-cards { grid-template-columns: 1fr 1fr; }
+}

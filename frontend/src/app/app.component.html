@@ -1,92 +1,108 @@
-<!-- ============================================================
-     app.component.html  —  Navbar + Router Outlet
-     ============================================================ -->
-<div class="app-shell">
+<!-- app.component.html -->
 
-  <!-- ── Navbar ── -->
-  <nav class="navbar" [class.navbar--scrolled]="scrolled">
-    <div class="navbar__inner">
+<!-- ── Navbar (hidden on seller dashboard which has its own sidebar) ── -->
+<nav class="navbar" [class.navbar--scrolled]="scrolled" *ngIf="!isSellerDashboard">
+  <div class="navbar__inner">
 
-      <!-- Brand -->
-      <a class="navbar__brand" routerLink="/shop">
-        <span class="navbar__brand-icon">
-          <i class="fa-solid fa-leaf"></i>
-        </span>
-        <span class="navbar__brand-text">Go<strong>Green</strong></span>
-      </a>
+    <!-- Brand -->
+    <a routerLink="/shop" class="navbar__brand">
+      <span class="navbar__brand-icon"><i class="fa-solid fa-leaf"></i></span>
+      Go<strong>Green</strong>
+    </a>
 
-      <!-- Nav links -->
-      <ul class="navbar__links">
+    <!-- Search -->
+    <div class="navbar__search">
+      <i class="fa-solid fa-magnifying-glass navbar__search-icon"></i>
+      <input
+        class="navbar__search-input"
+        type="text"
+        placeholder="Search eco products…"
+        [(ngModel)]="searchTerm"
+        (keyup.enter)="search()"
+      />
+      <button class="navbar__search-btn" (click)="search()">Search</button>
+    </div>
+
+    <!-- Nav links -->
+    <ul class="navbar__links">
+      <li>
+        <a routerLink="/shop" routerLinkActive="navbar__link--active" class="navbar__link">
+          <i class="fa-solid fa-store"></i> Shop
+        </a>
+      </li>
+
+      <!-- Not logged in -->
+      <ng-container *ngIf="!isLoggedIn">
         <li>
-          <a class="navbar__link" routerLink="/shop" routerLinkActive="navbar__link--active">
-            <i class="fa-solid fa-seedling"></i> Shop
-          </a>
-        </li>
-        <li *ngIf="!isTokenThere">
-          <a class="navbar__link" routerLink="/register" routerLinkActive="navbar__link--active">
+          <a routerLink="/register" routerLinkActive="navbar__link--active" class="navbar__link">
             Register
           </a>
         </li>
-        <li *ngIf="!isTokenThere">
-          <a class="navbar__link navbar__link--cta" routerLink="/login" routerLinkActive="navbar__link--active">
+        <li>
+          <a routerLink="/login" class="navbar__link navbar__link--cta">
             Sign in
           </a>
         </li>
-        <li *ngIf="isTokenThere">
-          <a class="navbar__link" routerLink="/account" routerLinkActive="navbar__link--active">
-            <i class="fa-regular fa-circle-user"></i> Account
-          </a>
-        </li>
-        <li *ngIf="isTokenThere">
-          <a class="navbar__link navbar__link--cart" routerLink="/cart" routerLinkActive="navbar__link--active">
+      </ng-container>
+
+      <!-- Logged in as BUYER -->
+      <ng-container *ngIf="isLoggedIn && userRole === 'ROLE_BUYER'">
+        <li>
+          <a routerLink="/cart" routerLinkActive="navbar__link--active" class="navbar__link">
             <i class="fa-solid fa-basket-shopping"></i> Cart
           </a>
         </li>
-      </ul>
+        <li>
+          <a routerLink="/account" routerLinkActive="navbar__link--active" class="navbar__link">
+            <i class="fa-regular fa-user"></i>
+            {{ username || 'Account' }}
+          </a>
+        </li>
+      </ng-container>
 
-      <button
-      *ngIf="isTokenThere"
-      class="logout-btn"
-      (click)="logout()">
-      Logout
-    </button>
+      <!-- Logged in as SELLER -->
+      <ng-container *ngIf="isLoggedIn && userRole === 'ROLE_SELLER'">
+        <li>
+          <a routerLink="/seller" routerLinkActive="navbar__link--active" class="navbar__link">
+            <i class="fa-solid fa-grid-2"></i> Dashboard
+          </a>
+        </li>
+        <li>
+          <a routerLink="/account" routerLinkActive="navbar__link--active" class="navbar__link">
+            <i class="fa-regular fa-user"></i>
+            {{ username || 'Account' }}
+          </a>
+        </li>
+      </ng-container>
 
-      <!-- Search -->
-      <form class="navbar__search" (submit)="search()">
-        <i class="fa-solid fa-magnifying-glass navbar__search-icon"></i>
-        <input
-          class="navbar__search-input"
-          type="search"
-          placeholder="Search eco products…"
-          [(ngModel)]="term"
-          name="term"
-          aria-label="Search products"
-        />
-        <button class="navbar__search-btn" type="submit">Search</button>
-      </form>
+      <!-- Logout (always shown when logged in) -->
+      <li *ngIf="isLoggedIn">
+        <button class="logout-btn" (click)="logout()">
+          <i class="fa-solid fa-right-from-bracket"></i> Sign out
+        </button>
+      </li>
+    </ul>
 
-    </div>
-  </nav>
+  </div>
+</nav>
 
-  <!-- ── Page content ── -->
-  <main class="page-wrapper">
-    <router-outlet></router-outlet>
-  </main>
-
-  <!-- ── Footer ── -->
-  <footer class="footer">
-    <div class="footer__inner">
-      <div class="footer__brand">
-        <span class="footer__brand-icon"><i class="fa-solid fa-leaf"></i></span>
-        <span class="footer__brand-text">Go<strong>Green</strong></span>
-      </div>
-      <p class="footer__copy">© 2024 GoGreen · Sustainable marketplace for a better planet 🌍</p>
-      <div class="footer__links">
-        <a href="#">Privacy</a>
-        <a href="#">Terms</a>
-        <a href="#">Contact</a>
-      </div>
-    </div>
-  </footer>
-
+<!-- ── Page content ── -->
+<div class="page-wrapper">
+  <router-outlet></router-outlet>
 </div>
+
+<!-- ── Footer (hidden on seller dashboard) ── -->
+<footer class="footer" *ngIf="!isSellerDashboard">
+  <div class="footer__inner">
+    <div class="footer__brand">
+      <span class="footer__brand-icon"><i class="fa-solid fa-leaf"></i></span>
+      GoGreen
+    </div>
+    <p class="footer__copy">© 2024 GoGreen · Sustainable marketplace for a better planet 🌍</p>
+    <div class="footer__links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+</footer>

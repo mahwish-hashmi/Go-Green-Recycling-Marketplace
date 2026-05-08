@@ -13,6 +13,7 @@ import { ProductListComponent } from './components/product-list/product-list.com
 import { ProductDetailComponent } from './components/product-detail/product-detail.component';
 import { CartComponent } from './components/cart/cart.component';
 import { UserDetailComponent } from './components/user-detail/user-detail.component';
+import { SellerDashboardComponent } from './components/seller-dashboard/seller-dashboard.component';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
 
 @NgModule({
@@ -23,7 +24,8 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
     ProductListComponent,
     ProductDetailComponent,
     CartComponent,
-    UserDetailComponent
+    UserDetailComponent,
+    SellerDashboardComponent
   ],
   imports: [
     BrowserModule,

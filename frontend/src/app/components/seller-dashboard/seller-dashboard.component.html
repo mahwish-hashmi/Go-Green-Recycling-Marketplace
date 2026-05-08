@@ -1,0 +1,201 @@
+<!-- seller-dashboard.component.html -->
+
+<!-- Toast -->
+<div class="sd-toast" [class.sd-toast--error]="toastType === 'error'" *ngIf="toast">
+  <i class="fa-solid" [class.fa-check-circle]="toastType === 'success'" [class.fa-circle-exclamation]="toastType === 'error'"></i>
+  {{ toast }}
+</div>
+
+<!-- Delete confirm modal -->
+<div class="sd-modal-bg" *ngIf="deleteConfirmId !== null" (click)="deleteConfirmId = null">
+  <div class="sd-modal" (click)="$event.stopPropagation()">
+    <div class="sd-modal__icon"><i class="fa-solid fa-trash"></i></div>
+    <h3>Delete product?</h3>
+    <p>This action cannot be undone.</p>
+    <div class="sd-modal__actions">
+      <button class="btn btn-ghost" (click)="deleteConfirmId = null">Cancel</button>
+      <button class="btn btn-danger-solid" (click)="deleteProduct(deleteConfirmId)">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="sd-shell">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sd-sidebar">
+    <div class="sd-sidebar__brand">
+      <span class="sd-brand-icon"><i class="fa-solid fa-leaf"></i></span>
+      <span class="sd-brand-text">Go<strong>Green</strong></span>
+    </div>
+
+    <nav class="sd-nav">
+      <div class="sd-nav__label">Seller Tools</div>
+      <a class="sd-nav__item sd-nav__item--active">
+        <i class="fa-solid fa-grid-2"></i> Dashboard
+      </a>
+      <a class="sd-nav__item" (click)="openAddForm()">
+        <i class="fa-solid fa-plus"></i> Add Product
+      </a>
+      <a class="sd-nav__item" routerLink="/shop">
+        <i class="fa-solid fa-store"></i> View Store
+      </a>
+    </nav>
+
+    <div class="sd-nav__label" style="margin-top:auto;">Account</div>
+    <nav class="sd-nav">
+      <a class="sd-nav__item" routerLink="/account">
+        <i class="fa-solid fa-user"></i> Profile
+      </a>
+      <a class="sd-nav__item sd-nav__item--danger" (click)="logout()">
+        <i class="fa-solid fa-right-from-bracket"></i> Sign out
+      </a>
+    </nav>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="sd-main">
+
+    <!-- Header -->
+    <header class="sd-header">
+      <div>
+        <h1 class="sd-header__title">Seller Dashboard</h1>
+        <p class="sd-header__sub" *ngIf="user">Welcome back, <strong>{{ user.name || user.username }}</strong> 👋</p>
+      </div>
+      <button class="btn btn-primary" (click)="openAddForm()">
+        <i class="fa-solid fa-plus"></i> Add Product
+      </button>
+    </header>
+
+    <!-- Analytics cards -->
+    <div class="sd-cards">
+      <div class="sd-card">
+        <div class="sd-card__icon sd-card__icon--green"><i class="fa-solid fa-box"></i></div>
+        <div class="sd-card__body">
+          <div class="sd-card__num">{{ products.length }}</div>
+          <div class="sd-card__label">Total Products</div>
+        </div>
+      </div>
+      <div class="sd-card">
+        <div class="sd-card__icon sd-card__icon--blue"><i class="fa-solid fa-bag-shopping"></i></div>
+        <div class="sd-card__body">
+          <div class="sd-card__num">0</div>
+          <div class="sd-card__label">Orders Received</div>
+        </div>
+      </div>
+      <div class="sd-card">
+        <div class="sd-card__icon sd-card__icon--amber"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="sd-card__body">
+          <div class="sd-card__num">$0</div>
+          <div class="sd-card__label">Total Revenue</div>
+        </div>
+      </div>
+      <div class="sd-card">
+        <div class="sd-card__icon sd-card__icon--purple"><i class="fa-solid fa-eye"></i></div>
+        <div class="sd-card__body">
+          <div class="sd-card__num">—</div>
+          <div class="sd-card__label">Product Views</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add/Edit Form -->
+    <div class="sd-form-panel anim-scale-in" *ngIf="showAddForm">
+      <div class="sd-form-panel__header">
+        <h2>{{ editingProduct ? 'Edit Product' : 'Add New Product' }}</h2>
+        <button class="btn btn-ghost btn-sm" (click)="closeForm()">
+          <i class="fa-solid fa-xmark"></i> Cancel
+        </button>
+      </div>
+      <div class="sd-form-body">
+        <div class="form-group">
+          <label class="form-label">Product name</label>
+          <input class="form-control" type="text" [(ngModel)]="formName" placeholder="e.g. Bamboo Water Bottle" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" rows="3" [(ngModel)]="formDescription"
+            placeholder="Describe the product, its eco benefits, materials used…"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Price (USD)</label>
+          <input class="form-control" type="number" [(ngModel)]="formPrice" placeholder="e.g. 24.99" min="0" step="0.01" />
+        </div>
+        <div class="sd-form-actions">
+          <button class="btn btn-ghost" (click)="closeForm()">Cancel</button>
+          <button class="btn btn-primary" (click)="submitForm()">
+            <i class="fa-solid fa-check"></i>
+            {{ editingProduct ? 'Save changes' : 'Add product' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products table -->
+    <div class="sd-table-panel">
+      <div class="sd-table-panel__header">
+        <h2>Your Products</h2>
+        <span class="products-count">{{ products.length }} items</span>
+      </div>
+
+      <!-- Loading -->
+      <div class="sd-loading" *ngIf="loading">
+        <i class="fa-solid fa-circle-notch fa-spin"></i> Loading products…
+      </div>
+
+      <!-- Empty -->
+      <div class="sd-empty" *ngIf="!loading && products.length === 0">
+        <i class="fa-solid fa-box-open sd-empty__icon"></i>
+        <h3>No products yet</h3>
+        <p>Add your first eco-friendly product to start selling!</p>
+        <button class="btn btn-primary" (click)="openAddForm()">
+          <i class="fa-solid fa-plus"></i> Add your first product
+        </button>
+      </div>
+
+      <!-- Table -->
+      <table class="sd-table" *ngIf="!loading && products.length > 0">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of products">
+            <td>
+              <div class="sd-table__product">
+                <div class="sd-table__img">
+                  <i class="fa-solid fa-seedling"></i>
+                </div>
+                <span class="sd-table__name">{{ product.name }}</span>
+              </div>
+            </td>
+            <td class="sd-table__desc">
+              {{ product.description | slice:0:60 }}{{ product.description?.length > 60 ? '…' : '' }}
+            </td>
+            <td>
+              <span class="sd-table__price">${{ product.price | number:'1.2-2' }}</span>
+            </td>
+            <td>
+              <span class="sd-badge sd-badge--active">Active</span>
+            </td>
+            <td>
+              <div class="sd-table__actions">
+                <button class="btn btn-ghost btn-sm" (click)="openEditForm(product)" title="Edit">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" (click)="confirmDelete(product.id)" title="Delete">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>

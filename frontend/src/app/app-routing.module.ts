@@ -6,16 +6,20 @@ import { ProductDetailComponent } from './components/product-detail/product-deta
 import { ProductListComponent } from './components/product-list/product-list.component';
 import { RegisterComponent } from './components/register/register.component';
 import { UserDetailComponent } from './components/user-detail/user-detail.component';
+import { SellerDashboardComponent } from './components/seller-dashboard/seller-dashboard.component';
 
 const routes: Routes = [
-    {path: '', redirectTo: '/shop', pathMatch: 'full' },
-    {path: 'register', component: RegisterComponent},
-    {path: 'login', component: LoginComponent},
-    {path: 'shop', component: ProductListComponent},
-    {path: 'shop/:term', component: ProductListComponent},
-    {path: 'shop/products/:id', component: ProductDetailComponent},
-    {path: 'account', component: UserDetailComponent},
-    {path: 'cart', component: CartComponent}
+  { path: '', redirectTo: '/shop', pathMatch: 'full' },
+  { path: 'register', component: RegisterComponent },
+  { path: 'login', component: LoginComponent },
+  { path: 'shop', component: ProductListComponent },
+  { path: 'shop/:term', component: ProductListComponent },
+  { path: 'shop/products/:id', component: ProductDetailComponent },
+  { path: 'account', component: UserDetailComponent },
+  { path: 'cart', component: CartComponent },
+  { path: 'seller', component: SellerDashboardComponent },
+  // Catch-all
+  { path: '**', redirectTo: '/shop' }
 ];
 
 @NgModule({
@@ -23,5 +27,5 @@ const routes: Routes = [
   exports: [RouterModule]
 })
 export class AppRoutingModule {
-    constructor (router : Router) {}
+  constructor(router: Router) {}
 }

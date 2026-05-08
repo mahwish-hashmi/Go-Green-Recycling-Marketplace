@@ -1,8 +1,5 @@
-
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-// import { faMapMarkerAlt, faPhoneAlt} from "@fortawesome/free-solid-svg-icons";
-import { Token } from 'src/app/models/Token';
 import { User } from 'src/app/models/User';
 import { UsersService } from 'src/app/services/users.service';
 
@@ -12,59 +9,98 @@ import { UsersService } from 'src/app/services/users.service';
   styleUrls: ['./user-detail.component.css']
 })
 export class UserDetailComponent implements OnInit {
-  user : User;
-  editMode: boolean = false;
+  user: User | null = null;
+  loading = true;
+  editing = false;
+  saving = false;
+  toast = '';
 
-  name : string;
-  username : string;
-  email : string;
-  address : string;
-  phone : string;
+  editName = '';
+  editEmail = '';
+  editAddress = '';
+  editPhone = '';
 
-  
-  constructor(private usersService : UsersService, private router : Router) { }
+  get initials(): string {
+    if (!this.user) return '?';
+    const n = this.user.name || this.user.username || '';
+    return n.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  get isSeller(): boolean {
+    return localStorage.getItem('userRole') === 'ROLE_SELLER';
+  }
+
+  constructor(private usersService: UsersService, private router: Router) {}
 
   ngOnInit(): void {
-      if (!localStorage.getItem('token')) {
-          this.router.navigateByUrl('/login')
-          return
+    const token = localStorage.getItem('token');
+    if (!token) {
+      this.router.navigateByUrl('/login');
+      return;
+    }
+    this.loadUser();
+  }
+
+  loadUser(): void {
+    this.usersService.getUserByToken().subscribe({
+      next: (user: User) => {
+        this.user = user;
+        this.loading = false;
+        this.editName    = user.name    || '';
+        this.editEmail   = user.email   || '';
+        this.editAddress = user.address || '';
+        this.editPhone   = user.phone   || '';
+      },
+      error: (err) => {
+        console.error('getUserByToken failed:', err);
+        this.loading = false;
+        // Show whatever we have from localStorage instead of redirecting
+        this.user = {
+          id: 0,
+          username: localStorage.getItem('username') || 'User',
+          name: localStorage.getItem('username') || '',
+          email: '',
+          address: '',
+          phone: '',
+          password: '',
+          cartItems: []
+        } as any;
       }
-
-      this.usersService.getUserByToken().subscribe((user : User) => {
-          this.user = user
-
-          this.name = user.name;
-          this.username = user.username;
-          this.email = user.email;
-          this.address = user.address;
-          this.phone = user.phone;
-      }, (error : ErrorEvent) => {
-          console.log(error)
-      })
+    });
   }
 
-  logOut () {
-      localStorage.removeItem('token')
-      this.router.navigateByUrl('/login').then(() => window.location.reload())
-  }
-
-  updateUser () {
-      this.usersService.updateUser(this.user.id.toString(), this.username, this.user.password, this.email, this.name, this.address, this.phone).subscribe((user : User) => {
-          this.usersService.createToken(user.username).subscribe((token : Token) => {
-              localStorage.removeItem('token')
-              console.log(localStorage.getItem('token'));
-              localStorage.setItem('token', token.token)
-              console.log(localStorage.getItem('token'));
-              window.location.reload()
-          })
-      })
-  }
-
-  deleteUser () {
-      if (window.confirm("Are you sure you want to delete?")) {
-          this.usersService.deleteUser(this.user.id.toString()).subscribe(res => {
-              this.logOut()
-          })
+  saveChanges(): void {
+    if (!this.user) return;
+    this.saving = true;
+    this.usersService.updateUser(
+      String(this.user.id),
+      this.user.username,
+      this.user.password || '',
+      this.editEmail,
+      this.editName,
+      this.editAddress,
+      this.editPhone
+    ).subscribe({
+      next: (updated: User) => {
+        this.user = updated;
+        this.saving = false;
+        this.editing = false;
+        this.showToast('Profile updated! ✓');
+      },
+      error: () => {
+        this.saving = false;
+        this.showToast('Failed to save changes');
       }
-  }    
+    });
+  }
+
+  showToast(msg: string): void {
+    this.toast = msg;
+    setTimeout(() => this.toast = '', 3000);
+  }
+
+  logout(): void {
+    localStorage.clear();
+    this.router.navigateByUrl('/login').then(() => window.location.reload());
+  }
 }

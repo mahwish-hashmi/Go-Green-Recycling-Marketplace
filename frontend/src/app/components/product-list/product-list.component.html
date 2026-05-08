@@ -1,9 +1,14 @@
 <!-- ============================================================
-     product-list.component.html  —  Hero + Product Grid
+     product-list.component.html  —  GoGreen Marketplace
      ============================================================ -->
 
+<!-- Toast notification -->
+<div class="toast" *ngIf="toast">
+  <i class="fa-solid fa-check-circle"></i> {{ toast }}
+</div>
+
 <!-- ── Hero ── -->
-<section class="hero">
+<section class="hero" *ngIf="!term">
   <div class="hero__bg-orbs">
     <div class="orb orb--1"></div>
     <div class="orb orb--2"></div>
@@ -24,7 +29,7 @@
         <a routerLink="/shop" class="btn btn-primary btn-lg">
           <i class="fa-solid fa-seedling"></i> Browse products
         </a>
-        <a routerLink="/register" class="btn btn-outline btn-lg">
+        <a routerLink="/register" class="btn btn-outline btn-lg" *ngIf="!isLoggedIn">
           Join for free
         </a>
       </div>
@@ -55,6 +60,22 @@
   </div>
 </section>
 
+<!-- ── Category pills (Mercari-style) ── -->
+<section class="categories" *ngIf="!term">
+  <div class="categories__inner">
+    <div class="categories__scroll">
+      <button class="cat-pill cat-pill--active">🌿 All</button>
+      <button class="cat-pill">♻️ Recycled</button>
+      <button class="cat-pill">🌱 Organic</button>
+      <button class="cat-pill">☀️ Solar</button>
+      <button class="cat-pill">🧴 Zero Waste</button>
+      <button class="cat-pill">🌊 Ocean Save</button>
+      <button class="cat-pill">🪴 Biodegradable</button>
+      <button class="cat-pill">💚 Upcycled</button>
+    </div>
+  </div>
+</section>
+
 <!-- ── Products section ── -->
 <section class="products-section">
   <div class="products-section__inner">
@@ -67,13 +88,23 @@
           {{ term ? 'Results for "' + term + '"' : 'All products' }}
         </h2>
       </div>
-      <span class="products-count" *ngIf="products">
-        {{ filteredCount }} items
-      </span>
+      <div class="products-header__right">
+        <span class="products-count" *ngIf="products !== null">
+          {{ filteredCount }} items
+        </span>
+        <!-- Seller: add product button -->
+        <a
+          *ngIf="isLoggedIn && userRole === 'ROLE_SELLER'"
+          routerLink="/seller/add-product"
+          class="btn btn-primary btn-sm"
+        >
+          <i class="fa-solid fa-plus"></i> Add Product
+        </a>
+      </div>
     </div>
 
     <!-- Loading skeletons -->
-    <div class="product-grid stagger" *ngIf="!products">
+    <div class="product-grid stagger" *ngIf="products === null">
       <div class="product-skeleton" *ngFor="let s of [1,2,3,4,5,6]">
         <div class="product-skeleton__img skeleton"></div>
         <div class="product-skeleton__body">
@@ -84,7 +115,7 @@
     </div>
 
     <!-- Product grid -->
-    <div class="product-grid stagger" *ngIf="products">
+    <div class="product-grid stagger" *ngIf="products !== null && products.length > 0">
       <ng-container *ngFor="let product of products; let i = index">
         <div
           class="product-card anim-fade-up"
@@ -97,25 +128,41 @@
           <div class="product-card__img-wrap">
             <div
               class="product-card__img"
-              [style.backgroundImage]="'url(' + product.imageUrl + ')'"
-            ></div>
+              [style.backgroundImage]="product.imageUrl ? 'url(' + product.imageUrl + ')' : null"
+              [class.product-card__img--placeholder]="!product.imageUrl"
+            >
+              <i class="fa-solid fa-seedling product-card__placeholder-icon" *ngIf="!product.imageUrl"></i>
+            </div>
             <span class="product-card__eco-badge">
               <i class="fa-solid fa-leaf"></i> Eco
             </span>
+            <!-- Hover overlay -->
+            <div class="product-card__overlay" [class.product-card__overlay--visible]="hoveredId === product.id">
+              <a
+                routerLink="/shop/products/{{ product.id }}"
+                class="btn btn-white btn-sm"
+              >
+                Quick view
+              </a>
+            </div>
           </div>
 
           <!-- Body -->
           <div class="product-card__body">
             <h3 class="product-card__name">{{ product.name }}</h3>
-            <p class="product-card__desc">{{ product.description | slice:0:60 }}{{ product.description?.length > 60 ? '…' : '' }}</p>
+            <p class="product-card__desc">
+              {{ product.description | slice:0:65 }}{{ product.description?.length > 65 ? '…' : '' }}
+            </p>
             <div class="product-card__footer">
               <span class="product-card__price">${{ product.price | number:'1.2-2' }}</span>
-              <a
-                routerLink="/shop/products/{{ product.id }}"
-                class="btn btn-primary btn-sm product-card__btn"
-              >
-                View <i class="fa-solid fa-arrow-right"></i>
-              </a>
+              <div class="product-card__actions">
+                <a
+                  routerLink="/shop/products/{{ product.id }}"
+                  class="btn btn-primary btn-sm product-card__btn"
+                >
+                  View <i class="fa-solid fa-arrow-right"></i>
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -123,11 +170,23 @@
     </div>
 
     <!-- Empty state -->
-    <div class="empty-state" *ngIf="products && filteredCount === 0">
+    <div class="empty-state" *ngIf="products !== null && filteredCount === 0">
       <i class="fa-solid fa-magnifying-glass empty-state__icon"></i>
       <h3>No products found</h3>
-      <p>Try a different search term</p>
+      <p>Try a different search term or browse all products</p>
       <a routerLink="/shop" class="btn btn-outline">Clear search</a>
+    </div>
+
+    <!-- Not logged in nudge -->
+    <div class="login-nudge" *ngIf="!isLoggedIn && products !== null && products.length > 0">
+      <div class="login-nudge__inner">
+        <i class="fa-solid fa-leaf login-nudge__icon"></i>
+        <div>
+          <strong>Join GoGreen to add items to your cart and start your eco journey!</strong>
+          <p>Already have an account? <a routerLink="/login">Sign in</a></p>
+        </div>
+        <a routerLink="/register" class="btn btn-primary btn-sm">Get started free</a>
+      </div>
     </div>
 
   </div>

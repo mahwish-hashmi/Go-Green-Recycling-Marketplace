@@ -1,150 +1,158 @@
-<!-- ============================================================
-     user-detail.component.html  —  Profile Page
-     ============================================================ -->
+<!-- user-detail.component.html -->
 
-<div class="profile-page" *ngIf="user">
+<!-- Toast -->
+<div class="toast" *ngIf="toast"><i class="fa-solid fa-check-circle"></i> {{ toast }}</div>
+
+<!-- Loading -->
+<div class="profile-page" *ngIf="loading">
+  <div class="profile-page__inner" style="display:flex;align-items:center;justify-content:center;padding:80px;">
+    <i class="fa-solid fa-circle-notch fa-spin" style="font-size:32px;color:#2e7d32;"></i>
+  </div>
+</div>
+
+<div class="profile-page" *ngIf="!loading && user">
   <div class="profile-page__inner">
 
-    <!-- Left column: avatar + quick actions -->
-    <aside class="profile-sidebar anim-fade-up">
+    <!-- ── Left sidebar ── -->
+    <div class="profile-sidebar">
+
+      <!-- Avatar card -->
       <div class="avatar-card">
-        <div class="avatar">
-          {{ user.name ? user.name.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase() }}
-        </div>
+        <div class="avatar">{{ initials }}</div>
         <div class="avatar-card__name">{{ user.name || user.username }}</div>
         <div class="avatar-card__handle">{{ '@' + user.username }}</div>
-        <div class="avatar-card__badge">
-          <i class="fa-solid fa-leaf"></i> Eco member
-        </div>
+        <span class="avatar-card__badge">
+          <i class="fa-solid fa-leaf"></i>
+          {{ isSeller ? 'Eco Seller' : 'Eco Buyer' }}
+        </span>
       </div>
 
-      <!-- Quick stats -->
+      <!-- Stats -->
       <div class="profile-stats">
         <div class="profile-stat">
-          <div class="profile-stat__num">{{ user.cartItems?.length || 0 }}</div>
-          <div class="profile-stat__label">Cart items</div>
+          <div class="profile-stat__num">0</div>
+          <div class="profile-stat__label">Orders</div>
         </div>
         <div class="profile-stat-divider"></div>
         <div class="profile-stat">
           <div class="profile-stat__num">0</div>
-          <div class="profile-stat__label">Orders placed</div>
+          <div class="profile-stat__label">Saved</div>
         </div>
         <div class="profile-stat-divider"></div>
         <div class="profile-stat">
-          <div class="profile-stat__num">🌿</div>
-          <div class="profile-stat__label">Eco score</div>
+          <div class="profile-stat__num">0 kg</div>
+          <div class="profile-stat__label">CO₂ saved</div>
         </div>
       </div>
 
-      <!-- Nav buttons -->
-      <div class="profile-nav">
+      <!-- Nav -->
+      <nav class="profile-nav">
         <a routerLink="/shop" class="profile-nav__item">
-          <i class="fa-solid fa-seedling"></i> Browse products
+          <i class="fa-solid fa-store"></i> Browse Shop
         </a>
-        <a routerLink="/cart" class="profile-nav__item">
-          <i class="fa-solid fa-basket-shopping"></i> View cart
+        <a *ngIf="!isSeller" routerLink="/cart" class="profile-nav__item">
+          <i class="fa-solid fa-basket-shopping"></i> My Cart
         </a>
-      </div>
-    </aside>
+        <a *ngIf="isSeller" routerLink="/seller" class="profile-nav__item">
+          <i class="fa-solid fa-grid-2"></i> Seller Dashboard
+        </a>
+        <button class="profile-nav__item" style="background:none;border:none;text-align:left;cursor:pointer;color:#c62828;font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;width:100%;" (click)="logout()">
+          <i class="fa-solid fa-right-from-bracket"></i> Sign out
+        </button>
+      </nav>
+    </div>
 
-    <!-- Right column: info card -->
-    <main class="profile-main anim-fade-up" style="animation-delay:.1s">
+    <!-- ── Main content ── -->
+    <div>
 
       <!-- View mode -->
-      <div *ngIf="!editMode" class="profile-card">
+      <div class="profile-card" *ngIf="!editing">
         <div class="profile-card__header">
-          <h2 class="profile-card__title">Account details</h2>
-          <button class="btn btn-outline btn-sm" (click)="editMode = true">
-            <i class="fa-solid fa-pen"></i> Edit profile
+          <h2 class="profile-card__title">Account Details</h2>
+          <button class="btn btn-outline btn-sm" (click)="editing = true">
+            <i class="fa-solid fa-pen"></i> Edit
           </button>
         </div>
 
         <div class="info-grid">
           <div class="info-item">
-            <span class="info-item__label">
-              <i class="fa-regular fa-id-card"></i> Full name
-            </span>
-            <span class="info-item__value">{{ user.name }}</span>
+            <div class="info-item__label"><i class="fa-regular fa-id-card"></i> Full name</div>
+            <div class="info-item__value">{{ user.name || '—' }}</div>
           </div>
           <div class="info-item">
-            <span class="info-item__label">
-              <i class="fa-regular fa-user"></i> Username
-            </span>
-            <span class="info-item__value">{{ '@' + user.username }}</span>
+            <div class="info-item__label"><i class="fa-regular fa-user"></i> Username</div>
+            <div class="info-item__value">{{ user.username }}</div>
           </div>
           <div class="info-item info-item--full">
-            <span class="info-item__label">
-              <i class="fa-regular fa-envelope"></i> Email address
-            </span>
-            <span class="info-item__value">{{ user.email }}</span>
-          </div>
-          <div class="info-item info-item--full">
-            <span class="info-item__label">
-              <i class="fa-solid fa-location-dot"></i> Address
-            </span>
-            <span class="info-item__value">{{ user.address }}</span>
+            <div class="info-item__label"><i class="fa-regular fa-envelope"></i> Email address</div>
+            <div class="info-item__value">{{ user.email || '—' }}</div>
           </div>
           <div class="info-item">
-            <span class="info-item__label">
-              <i class="fa-solid fa-phone"></i> Phone
-            </span>
-            <span class="info-item__value">+{{ user.phone }}</span>
+            <div class="info-item__label"><i class="fa-solid fa-phone"></i> Phone</div>
+            <div class="info-item__value">{{ user.phone || '—' }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-item__label"><i class="fa-solid fa-location-dot"></i> Address</div>
+            <div class="info-item__value">{{ user.address || '—' }}</div>
           </div>
         </div>
 
         <div class="profile-card__actions">
-          <button class="btn btn-danger btn-sm" (click)="deleteUser()">
-            <i class="fa-solid fa-trash"></i> Delete account
-          </button>
-          <button class="btn btn-ghost btn-sm" (click)="logOut()">
-            <i class="fa-solid fa-right-from-bracket"></i> Sign out
-          </button>
+          <span class="badge badge-green">
+            <i class="fa-solid fa-shield-halved"></i> Account verified
+          </span>
         </div>
       </div>
 
       <!-- Edit mode -->
-      <div *ngIf="editMode" class="profile-card anim-scale-in">
+      <div class="profile-card anim-scale-in" *ngIf="editing">
         <div class="profile-card__header">
-          <h2 class="profile-card__title">Edit profile</h2>
-          <button class="btn btn-ghost btn-sm" (click)="editMode = false">
+          <h2 class="profile-card__title">Edit Profile</h2>
+          <button class="btn btn-ghost btn-sm" (click)="editing = false">
             <i class="fa-solid fa-xmark"></i> Cancel
           </button>
         </div>
 
-        <div class="form-row" style="margin-bottom:18px;">
+        <div class="info-grid">
           <div class="form-group">
             <label class="form-label">Full name</label>
-            <input class="form-control" type="text" [(ngModel)]="name" placeholder="Jane Smith" />
+            <input class="form-control" type="text" [(ngModel)]="editName" placeholder="Your full name" />
           </div>
           <div class="form-group">
-            <label class="form-label">Username</label>
-            <input class="form-control" type="text" [(ngModel)]="username" placeholder="eco_shopper" />
+            <label class="form-label">Email</label>
+            <input class="form-control" type="email" [(ngModel)]="editEmail" placeholder="you@example.com" />
           </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Email address</label>
-          <input class="form-control" type="text" [(ngModel)]="email" placeholder="you@example.com" />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Address</label>
-          <input class="form-control" type="text" [(ngModel)]="address" placeholder="123 Green St, City" />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Phone</label>
-          <input class="form-control" type="text" [(ngModel)]="phone" placeholder="+1 555 0000" />
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input class="form-control" type="text" [(ngModel)]="editPhone" placeholder="+1 555 0000" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Address</label>
+            <input class="form-control" type="text" [(ngModel)]="editAddress" placeholder="123 Green St" />
+          </div>
         </div>
 
         <div class="profile-card__save-row">
-          <button class="btn btn-primary" (click)="updateUser()">
-            <i class="fa-solid fa-check"></i> Save changes
+          <button class="btn btn-ghost" (click)="editing = false">Cancel</button>
+          <button class="btn btn-primary" (click)="saveChanges()" [disabled]="saving">
+            <span *ngIf="!saving"><i class="fa-solid fa-check"></i> Save changes</span>
+            <span *ngIf="saving"><i class="fa-solid fa-circle-notch fa-spin"></i> Saving…</span>
           </button>
-          <button class="btn btn-ghost" (click)="editMode = false">Discard</button>
         </div>
       </div>
 
-    </main>
+      <!-- Eco impact card -->
+      <div class="profile-card" style="margin-top:20px;">
+        <div class="profile-card__header">
+          <h2 class="profile-card__title">🌿 Eco Impact</h2>
+        </div>
+        <div style="text-align:center;padding:24px;color:#607868;">
+          <i class="fa-solid fa-seedling" style="font-size:40px;color:#c8e6c9;margin-bottom:16px;display:block;"></i>
+          <p>Start shopping to track your sustainability impact!</p>
+          <a routerLink="/shop" class="btn btn-primary btn-sm" style="margin-top:16px;">Browse products</a>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>

@@ -1,38 +1,26 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { tap } from 'rxjs/operators';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
+  constructor(private router: Router) {}
 
-  constructor(
-    private http: HttpClient,
-    private router: Router
-  ) {}
-
-  login(credentials: any) {
-    return this.http.post<any>('http://localhost:8080/api/login', credentials)
-      .pipe(
-        tap(response => {
-
-          localStorage.setItem('token', response.token);
-
-          localStorage.setItem('role', response.role);
-
-          localStorage.setItem('username', response.username);
-
-        })
-      );
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('token');
   }
 
-  logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('username');
+  getRole(): string {
+    return localStorage.getItem('userRole') || '';
+  }
 
-    this.router.navigate(['/login']);
+  getUsername(): string {
+    return localStorage.getItem('username') || '';
+  }
+
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('username');
+    this.router.navigateByUrl('/login').then(() => window.location.reload());
   }
 }

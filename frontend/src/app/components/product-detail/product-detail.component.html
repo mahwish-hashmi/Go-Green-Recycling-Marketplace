@@ -1,11 +1,10 @@
-<!-- ============================================================
-     product-detail.component.html
-     ============================================================ -->
+<!-- product-detail.component.html -->
+
+<div class="toast" *ngIf="toast"><i class="fa-solid fa-check-circle"></i> {{ toast }}</div>
 
 <div class="detail-page">
   <div class="detail-page__inner">
 
-    <!-- Breadcrumb -->
     <nav class="breadcrumb anim-fade-in">
       <a routerLink="/shop" class="breadcrumb__link">
         <i class="fa-solid fa-arrow-left"></i> Back to shop
@@ -20,7 +19,7 @@
       <a routerLink="/shop" class="btn btn-primary">Return to shop</a>
     </div>
 
-    <!-- Loading -->
+    <!-- Loading skeleton -->
     <div class="detail-skeleton" *ngIf="product === undefined">
       <div class="detail-skeleton__img skeleton"></div>
       <div class="detail-skeleton__info">
@@ -28,20 +27,23 @@
         <div class="skeleton" style="height:36px;width:80%;margin-bottom:12px;"></div>
         <div class="skeleton" style="height:14px;width:40%;margin-bottom:32px;"></div>
         <div class="skeleton" style="height:80px;width:100%;margin-bottom:32px;"></div>
-        <div class="skeleton" style="height:48px;width:160px;"></div>
+        <div class="skeleton" style="height:52px;width:100%;border-radius:14px;"></div>
       </div>
     </div>
 
-    <!-- Product detail -->
+    <!-- Product -->
     <div class="detail-layout anim-fade-up" *ngIf="product !== undefined && product !== null">
 
-      <!-- Image panel -->
+      <!-- Image -->
       <div class="detail-img-panel">
         <div class="detail-img-wrap">
           <div
             class="detail-img"
-            [style.backgroundImage]="'url(' + product.imageUrl + ')'"
-          ></div>
+            [class.detail-img--placeholder]="!product.imageUrl"
+            [style.backgroundImage]="product.imageUrl ? 'url(' + product.imageUrl + ')' : null"
+          >
+            <i class="fa-solid fa-seedling detail-placeholder-icon" *ngIf="!product.imageUrl"></i>
+          </div>
           <div class="detail-img-overlay"></div>
         </div>
         <div class="detail-img-tags">
@@ -50,13 +52,13 @@
         </div>
       </div>
 
-      <!-- Info panel -->
+      <!-- Info -->
       <div class="detail-info">
         <span class="section-label" style="display:block;margin-bottom:12px;">Product detail</span>
         <h1 class="detail-name">{{ product.name }}</h1>
         <p class="detail-meta">
           <i class="fa-regular fa-calendar-check"></i>
-          Listed {{ product.addedOn | date: 'MMMM d, yyyy' }}
+          Listed {{ product.addedOn | date:'MMMM d, yyyy' }}
         </p>
 
         <hr class="divider" style="margin:24px 0;">
@@ -71,7 +73,7 @@
 
         <hr class="divider" style="margin:24px 0;">
 
-        <div class="detail-desc-section">
+        <div class="detail-desc-section" style="margin-bottom:28px;">
           <h3 class="detail-desc-title">About this product</h3>
           <p class="detail-desc">{{ product.description }}</p>
         </div>
@@ -80,39 +82,26 @@
           <button
             *ngIf="!isProductInCart"
             class="btn btn-primary btn-lg detail-cta"
-            [disabled]="!user"
-            (click)="addToCart()"
+            [disabled]="addingToCart || (!isLoggedIn && false)"
+            (click)="isLoggedIn ? addToCart() : null"
+            [routerLink]="isLoggedIn ? null : '/login'"
           >
-            <i class="fa-solid fa-basket-shopping"></i>
-            Add to cart
+            <i class="fa-solid fa-basket-shopping" *ngIf="!addingToCart"></i>
+            <i class="fa-solid fa-circle-notch fa-spin" *ngIf="addingToCart"></i>
+            {{ isLoggedIn ? 'Add to cart' : 'Sign in to add to cart' }}
           </button>
           <button *ngIf="isProductInCart" class="btn btn-lg detail-cta detail-cta--in-cart" disabled>
-            <i class="fa-solid fa-check"></i>
-            In your cart
+            <i class="fa-solid fa-check"></i> In your cart
           </button>
-          <p *ngIf="!user" class="detail-login-hint">
-            <a routerLink="/login">Sign in</a> to add items to your cart
-          </p>
         </div>
 
-        <!-- Trust badges -->
         <div class="trust-badges">
-          <div class="trust-badge">
-            <i class="fa-solid fa-shield-halved"></i>
-            <span>Buyer protection</span>
-          </div>
-          <div class="trust-badge">
-            <i class="fa-solid fa-truck-fast"></i>
-            <span>Fast shipping</span>
-          </div>
-          <div class="trust-badge">
-            <i class="fa-solid fa-arrow-rotate-left"></i>
-            <span>Easy returns</span>
-          </div>
+          <div class="trust-badge"><i class="fa-solid fa-shield-halved"></i><span>Buyer protection</span></div>
+          <div class="trust-badge"><i class="fa-solid fa-truck-fast"></i><span>Fast shipping</span></div>
+          <div class="trust-badge"><i class="fa-solid fa-arrow-rotate-left"></i><span>Easy returns</span></div>
         </div>
       </div>
 
     </div>
-
   </div>
 </div>

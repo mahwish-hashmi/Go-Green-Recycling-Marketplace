@@ -7,27 +7,18 @@ import { User } from '../models/User';
 
 @Injectable({ providedIn: 'root' })
 export class UsersService {
-
   constructor(private http: HttpClient) {}
-
-  // ── Auth endpoints (public — no token needed) ─────────────────────
 
   register(username: string, password: string, email: string,
            name: string, address: string, phone: string): Observable<any> {
-    // POST http://localhost:8080/api/register
     return this.http.post<any>(`${environment.API_URL}/register`, {
       username, password, email, name, address, phone
     });
   }
 
   login(username: string, password: string): Observable<any> {
-    // POST http://localhost:8080/api/login
-    return this.http.post<any>(`${environment.API_URL}/login`, {
-      username, password
-    });
+    return this.http.post<any>(`${environment.API_URL}/login`, { username, password });
   }
-
-  // ── Authenticated endpoints ───────────────────────────────────────
 
   createToken(username: string): Observable<Token> {
     return this.http.post<Token>(`${environment.API_URL}/create-token`, { username });
@@ -42,7 +33,6 @@ export class UsersService {
   }
 
   getUserByToken(): Observable<User> {
-    // GET http://localhost:8080/api/user  (requires JWT)
     return this.http.get<User>(`${environment.API_URL}/user`);
   }
 

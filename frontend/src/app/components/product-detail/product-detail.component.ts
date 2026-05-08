@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from 'src/app/models/Product';
 import { ProductsService } from 'src/app/services/products.service';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { User } from 'src/app/models/User';
 import { UsersService } from 'src/app/services/users.service';
 import { CartItemsService } from 'src/app/services/cart-items.service';
@@ -13,47 +12,79 @@ import { CartItemsService } from 'src/app/services/cart-items.service';
   styleUrls: ['./product-detail.component.css']
 })
 export class ProductDetailComponent implements OnInit {
-  public product : Product
-  public user : User
-  public isProductInCart : boolean
+  public product: Product | undefined | null = undefined;
+  public user: User | null = null;
+  public isProductInCart: boolean = false;
+  public isLoggedIn: boolean = false;
+  public addingToCart: boolean = false;
+  public toast: string = '';
 
   constructor(
-      private route : ActivatedRoute, 
-      private productsService : ProductsService, 
-      private usersService : UsersService,
-      private cartItemsService : CartItemsService
-  ) { }
+    private route: ActivatedRoute,
+    private router: Router,
+    private productsService: ProductsService,
+    private usersService: UsersService,
+    private cartItemsService: CartItemsService
+  ) {}
 
   ngOnInit(): void {
-      this.productsService.getProduct(this.route.snapshot.paramMap.get('id')).subscribe((product : Product) => {
-          this.product = product
-          this.product.imageUrl = product.image ? 'data:image/jpeg;base64,' + product.image :
-          "../../../assets/static/images/product-placeholder.png";
-      }, (error: ErrorEvent) => {
-          console.log(this.product);
-      })
+    this.isLoggedIn = !!localStorage.getItem('token');
+    const id = this.route.snapshot.paramMap.get('id');
 
-      this.usersService.getUserByToken().subscribe((user : User) => {
-          this.user = user
-          console.log(this.user.id);
+    this.productsService.getProduct(id!).subscribe({
+      next: (product: Product) => {
+        this.product = product;
+        this.product.imageUrl = product.image
+          ? 'data:image/jpeg;base64,' + product.image
+          : null;
+      },
+      error: () => { this.product = null; }
+    });
 
-          this.getCartItem()
-      }, (error : ErrorEvent) => {
-          console.log(error)
-      })
+    if (this.isLoggedIn) {
+      this.usersService.getUserByToken().subscribe({
+        next: (user: User) => {
+          this.user = user;
+          this.checkCartItem();
+        },
+        error: () => {}
+      });
+    }
   }
 
-  addToCart () {
-      this.cartItemsService.addToUserCart(this.user.id.toString(), this.product.id.toString()).subscribe(res => {
-          this.getCartItem()
-      })
+  addToCart(): void {
+    if (!this.user) {
+      this.router.navigateByUrl('/login');
+      return;
+    }
+    this.addingToCart = true;
+    this.cartItemsService.addToUserCart(
+      String(this.user.id), String(this.product!.id)
+    ).subscribe({
+      next: () => {
+        this.addingToCart = false;
+        this.isProductInCart = true;
+        this.showToast('Added to cart! 🛒');
+      },
+      error: () => {
+        this.addingToCart = false;
+        this.showToast('Failed to add to cart');
+      }
+    });
   }
 
-  getCartItem () {
-      this.cartItemsService.getCartItem(this.user.id.toString(), this.product.id.toString()).subscribe(res => {
-          this.isProductInCart = true
-      }, (error : ErrorEvent) => {
-          this.isProductInCart = false
-      })
+  checkCartItem(): void {
+    if (!this.user || !this.product) return;
+    this.cartItemsService.getCartItem(
+      String(this.user.id), String(this.product.id)
+    ).subscribe({
+      next: () => { this.isProductInCart = true; },
+      error: () => { this.isProductInCart = false; }
+    });
+  }
+
+  showToast(msg: string): void {
+    this.toast = msg;
+    setTimeout(() => this.toast = '', 3000);
   }
 }
