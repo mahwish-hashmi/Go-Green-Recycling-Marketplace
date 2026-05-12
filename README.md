@@ -38,13 +38,66 @@ A full-stack web application designed to promote sustainable living by enabling 
 ## 🧱 Architecture
 
 ```
-Angular (Frontend)
-        ↓
-REST API (Spring Boot Backend)
-        ↓
-MySQL Database
+┌───────────────────────┐
+│   Angular Frontend    │
+│  (UI & Client Logic)  │
+└──────────┬────────────┘
+           │
+           │ REST API Calls
+           ▼
+┌───────────────────────┐
+│   Spring Boot API     │
+│ (Business Logic Layer)│
+└──────────┬────────────┘
+           │
+           │ JPA / Hibernate
+           ▼
+┌───────────────────────┐
+│    MySQL Database     │
+│   (Persistent Data)   │
+└───────────────────────┘
 ```
 
+---
+## 🔄 Application Flow
+
+```text
+User → Angular UI → REST API → Spring Boot → MySQL Database
+```
+
+---
+
+## 🔐 Authentication Flow
+
+```text
+User Login/Register
+        ↓
+JWT Token Generated
+        ↓
+Token Sent with Requests
+        ↓
+Backend Validation
+        ↓
+Authorized Access
+```
+
+---
+
+## 👥 Role-Based Access
+
+```text
+Buyer
+ ├── Browse Products
+ ├── Add to Cart
+ ├── Wishlist
+ └── Place Orders
+
+Seller
+ ├── Upload Products
+ ├── Manage Inventory
+ ├── Seller Dashboard
+ └── Manage Orders
+```
 ---
 
 ## 📸 Screenshots
@@ -86,43 +139,6 @@ cd frontend
 npm install
 ng serve
 ```
-
----
-
-### 🔹 Database Setup
-
-* Start MySQL server
-* Create database:
-
-```sql
-CREATE DATABASE ecommerce;
-```
-
-* Update credentials in:
-
-```
-application.properties
-```
-
----
-
-## 🔌 API Example
-
-### Create Product
-
-```http
-POST /api/products
-Content-Type: application/json
-```
-
-```json
-{
-  "name": "Eco Bottle",
-  "description": "Reusable eco-friendly bottle",
-  "price": 299
-}
-```
-
 ---
 
 ## 📁 Folder Structure
@@ -162,17 +178,3 @@ Recycling-App-main/
 BTech Student | Full-Stack Developer
 
 ---
-
-## ⭐ Why This Project?
-
-This project demonstrates:
-
-* Full-stack development skills
-* REST API design
-* Secure authentication (JWT)
-* Scalable system design
-* Real-world application architecture
-
----
-
-⭐ *If you like this project, consider giving it a star!*
