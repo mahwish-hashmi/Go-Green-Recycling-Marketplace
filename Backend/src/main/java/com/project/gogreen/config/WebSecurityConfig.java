@@ -31,9 +31,7 @@ public class WebSecurityConfig {
     @Autowired private UserDetailsService jwtUserDetailsService;
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -56,23 +54,22 @@ public class WebSecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 /*
-                 * HOW PATHS WORK WITH context-path=/api:
+                 * HOW PATHS WORK:
+                 * server.servlet.context-path = /api
+                 * Spring Security sees paths WITHOUT the context-path prefix.
                  *
-                 * The server.servlet.context-path=/api setting means Spring Boot
-                 * strips /api from the beginning before matching Security rules.
-                 * So the actual servlet paths (what Spring Security sees) are:
+                 * http://localhost:8080/api/login     → security path = /login
+                 * http://localhost:8080/api/register  → security path = /register
+                 * http://localhost:8080/api/user      → security path = /user  (NEEDS TOKEN)
+                 * http://localhost:8080/api/products  → security path = /products
                  *
-                 *   http://localhost:8080/api/login    → servlet path = /login
-                 *   http://localhost:8080/api/register → servlet path = /register
-                 *   http://localhost:8080/api/products → servlet path = /products
-                 *   http://localhost:8080/api/user     → servlet path = /user
-                 *
-                 * The WRONG paths (that were in the old config):
-                 *   "/api/auth/login"   ← never matches anything
-                 *   "/api/products"     ← never matches (double /api)
+                 * WRONG (old config):
+                 *   "/api/auth/login"   ← these paths don't exist, nothing matched
+                 *   "/user" in permitAll ← made /user public, breaking SecurityContextHolder
                  */
                 .requestMatchers("/login", "/register").permitAll()
                 .requestMatchers("/products", "/products/**").permitAll()
+                // /user MUST be authenticated — it reads from SecurityContextHolder
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
@@ -87,10 +84,10 @@ public class WebSecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:4200"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS","PATCH"));
         configuration.setAllowedHeaders(Arrays.asList(
-            "Authorization", "Content-Type", "Accept", "Origin",
-            "Access-Control-Request-Method", "Access-Control-Request-Headers"
+            "Authorization","Content-Type","Accept","Origin",
+            "Access-Control-Request-Method","Access-Control-Request-Headers"
         ));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);

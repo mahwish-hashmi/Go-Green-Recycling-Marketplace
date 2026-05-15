@@ -14,7 +14,17 @@ import { ProductDetailComponent } from './components/product-detail/product-deta
 import { CartComponent } from './components/cart/cart.component';
 import { UserDetailComponent } from './components/user-detail/user-detail.component';
 import { SellerDashboardComponent } from './components/seller-dashboard/seller-dashboard.component';
+import { WishlistComponent } from './components/wishlist/wishlist.component';
+import { OrdersComponent } from './components/orders/orders.component';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
+
+// Guards
+import { AuthGuard } from './guards/auth.guard';
+import { BuyerGuard } from './guards/buyer.guard';
+import { SellerGuard } from './guards/seller.guard';
+
+// Services
+import { WishlistService } from './services/wishlist.service';
 
 @NgModule({
   declarations: [
@@ -25,7 +35,9 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
     ProductDetailComponent,
     CartComponent,
     UserDetailComponent,
-    SellerDashboardComponent
+    SellerDashboardComponent,
+    WishlistComponent,
+    OrdersComponent
   ],
   imports: [
     BrowserModule,
@@ -40,7 +52,11 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
       provide: HTTP_INTERCEPTORS,
       useClass: JwtInterceptor,
       multi: true
-    }
+    },
+    AuthGuard,
+    BuyerGuard,
+    SellerGuard,
+    WishlistService
   ],
   bootstrap: [AppComponent]
 })

@@ -29,18 +29,22 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        // getServletPath() returns path WITHOUT context-path prefix
-        // So for http://localhost:8080/api/register → servletPath = /register
+        // getServletPath() returns path WITHOUT the context-path prefix (/api).
+        // So http://localhost:8080/api/login  → servletPath = /login
+        //    http://localhost:8080/api/user   → servletPath = /user
         String path = request.getServletPath();
 
-        // Let public paths through without any JWT check
-        if (path.equals("/login") || path.equals("/register")
-                || path.startsWith("/products")) {
+        // Let public endpoints pass through without any JWT processing
+        // Matches the permitAll() paths in WebSecurityConfig exactly
+        if (path.equals("/login") ||
+            path.equals("/register") ||
+            path.startsWith("/products")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String authHeader = request.getHeader("Authorization");
+        // For all other paths, try to extract and validate the JWT token
+        final String authHeader = request.getHeader("Authorization");
         String username = null;
         String jwtToken = null;
 
@@ -54,14 +58,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 logger.warn("JWT token has expired");
             }
         }
-        // No else-warn here — public pages legitimately have no token
+        // Note: no warn when no token — public pages legitimately have no token
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);
             if (jwtUtil.validateToken(jwtToken, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
+                        userDetails, null, userDetails.getAuthorities()
+                    );
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }

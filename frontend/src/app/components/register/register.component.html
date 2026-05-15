@@ -1,11 +1,12 @@
 <!-- register.component.html -->
 <div class="auth-page">
+
   <!-- Left panel -->
   <div class="auth-panel anim-fade-in">
     <div class="auth-panel__content">
       <div class="auth-panel__logo"><i class="fa-solid fa-leaf"></i></div>
-      <h2 class="auth-panel__title">Join the green revolution</h2>
-      <p class="auth-panel__sub">Create your free account and start buying and selling eco-friendly products today.</p>
+      <h2 class="auth-panel__title">Join GoGreen today</h2>
+      <p class="auth-panel__sub">The eco-friendly marketplace for buyers and sellers who care about the planet.</p>
       <div class="auth-panel__features">
         <div class="auth-panel__feat"><i class="fa-solid fa-bolt"></i><span>Set up in under 2 minutes</span></div>
         <div class="auth-panel__feat"><i class="fa-solid fa-store"></i><span>Access the full marketplace</span></div>
@@ -14,101 +15,164 @@
     </div>
   </div>
 
-  <!-- Form side -->
-  <div class="auth-form-side anim-scale-in">
-    <div class="auth-card auth-card--wide">
+  <!-- Right: form side -->
+  <div class="auth-form-side">
 
-      <!-- Success state -->
-      <div class="auth-success" *ngIf="success">
+    <!-- SUCCESS -->
+    <div class="auth-card anim-scale-in" *ngIf="success">
+      <div class="auth-success">
         <div class="auth-success__icon"><i class="fa-solid fa-check"></i></div>
-        <h2>Account created! 🌿</h2>
-        <p>Welcome to GoGreen. Redirecting you now…</p>
-      </div>
-
-      <!-- Form state -->
-      <div *ngIf="!success">
-        <div class="auth-card__header">
-          <h1 class="auth-card__title">Create account</h1>
-          <p class="auth-card__sub">Already a member? <a routerLink="/login" class="auth-link">Sign in</a></p>
-        </div>
-
-        <form class="auth-form" (submit)="register()">
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="username">Username</label>
-              <div class="input-wrap">
-                <i class="fa-regular fa-user input-icon"></i>
-                <input class="form-control form-control--icon" type="text" id="username"
-                  placeholder="eco_shopper" name="username" [(ngModel)]="username" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="name">Full name</label>
-              <div class="input-wrap">
-                <i class="fa-regular fa-id-card input-icon"></i>
-                <input class="form-control form-control--icon" type="text" id="name"
-                  placeholder="Jane Smith" name="name" [(ngModel)]="name" />
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="email">Email address</label>
-            <div class="input-wrap">
-              <i class="fa-regular fa-envelope input-icon"></i>
-              <input class="form-control form-control--icon" type="email" id="email"
-                placeholder="you@example.com" name="email" [(ngModel)]="email" />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="password">Password</label>
-              <div class="input-wrap">
-                <i class="fa-solid fa-lock input-icon"></i>
-                <input class="form-control form-control--icon" type="password" id="password"
-                  placeholder="Min 8 characters" name="password" [(ngModel)]="password" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="confirmPassword">Confirm password</label>
-              <div class="input-wrap">
-                <i class="fa-solid fa-lock input-icon"></i>
-                <input class="form-control form-control--icon" type="password" id="confirmPassword"
-                  placeholder="••••••••" name="confirmPassword" [(ngModel)]="passwordConfirm" />
-              </div>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group" style="flex:2">
-              <label class="form-label" for="address">Address</label>
-              <div class="input-wrap">
-                <i class="fa-solid fa-location-dot input-icon"></i>
-                <input class="form-control form-control--icon" type="text" id="address"
-                  placeholder="123 Green Street, City" name="address" [(ngModel)]="address" />
-              </div>
-            </div>
-            <div class="form-group" style="flex:1">
-              <label class="form-label" for="phone">Phone</label>
-              <div class="input-wrap">
-                <i class="fa-solid fa-phone input-icon"></i>
-                <input class="form-control form-control--icon" type="text" id="phone"
-                  placeholder="+1 555 0000" name="phone" [(ngModel)]="phone" />
-              </div>
-            </div>
-          </div>
-
-          <div class="alert-error" *ngIf="error">
-            <i class="fa-solid fa-circle-exclamation"></i> {{ error }}
-          </div>
-
-          <button type="submit" class="btn btn-primary btn-lg auth-submit" [disabled]="loading">
-            <span *ngIf="!loading">Create my account <i class="fa-solid fa-arrow-right"></i></span>
-            <span *ngIf="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Creating…</span>
-          </button>
-        </form>
+        <h2>Welcome to GoGreen! 🌿</h2>
+        <p>Your account has been created. Redirecting you now…</p>
       </div>
     </div>
+
+    <!-- STEP 1: Choose role -->
+    <div class="auth-card anim-scale-in" *ngIf="!success && step === 1">
+      <div class="auth-card__header">
+        <h1 class="auth-card__title">Create account</h1>
+        <p class="auth-card__sub">Already a member? <a routerLink="/login" class="auth-link">Sign in</a></p>
+      </div>
+
+      <p class="role-choose-label">I want to join as a…</p>
+
+      <div class="role-cards">
+        <!-- BUYER -->
+        <div class="role-card" (click)="selectRole('ROLE_BUYER')">
+          <div class="role-card__icon role-card__icon--buyer">
+            <i class="fa-solid fa-basket-shopping"></i>
+          </div>
+          <h3 class="role-card__title">Buyer</h3>
+          <p class="role-card__desc">Browse and buy eco-friendly products, build wishlists, track orders and your eco impact.</p>
+          <div class="role-card__features">
+            <span><i class="fa-solid fa-check"></i> Browse products</span>
+            <span><i class="fa-solid fa-check"></i> Cart & Wishlist</span>
+            <span><i class="fa-solid fa-check"></i> Order history</span>
+            <span><i class="fa-solid fa-check"></i> Eco impact tracker</span>
+          </div>
+          <button class="btn btn-primary btn-lg role-card__btn">
+            Join as Buyer <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <!-- SELLER -->
+        <div class="role-card" (click)="selectRole('ROLE_SELLER')">
+          <div class="role-card__icon role-card__icon--seller">
+            <i class="fa-solid fa-store"></i>
+          </div>
+          <h3 class="role-card__title">Seller</h3>
+          <p class="role-card__desc">Create your eco store, list products, manage inventory and grow a sustainable business.</p>
+          <div class="role-card__features">
+            <span><i class="fa-solid fa-check"></i> Seller dashboard</span>
+            <span><i class="fa-solid fa-check"></i> Upload products</span>
+            <span><i class="fa-solid fa-check"></i> Analytics & orders</span>
+            <span><i class="fa-solid fa-check"></i> Store branding</span>
+          </div>
+          <button class="btn btn-outline btn-lg role-card__btn">
+            Join as Seller <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: Registration form -->
+    <div class="auth-card auth-card--wide anim-scale-in" *ngIf="!success && step === 2">
+      <div class="auth-card__header">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+          <button class="btn btn-ghost btn-sm" (click)="step=1">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <span class="role-badge" [class.role-badge--seller]="selectedRole==='ROLE_SELLER'">
+            <i class="fa-solid" [class.fa-basket-shopping]="selectedRole==='ROLE_BUYER'" [class.fa-store]="selectedRole==='ROLE_SELLER'"></i>
+            {{ selectedRole === 'ROLE_BUYER' ? 'Buyer' : 'Seller' }} account
+          </span>
+        </div>
+        <h1 class="auth-card__title">Create your account</h1>
+        <p class="auth-card__sub">Already a member? <a routerLink="/login" class="auth-link">Sign in</a></p>
+      </div>
+
+      <form class="auth-form" (submit)="register()">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Username <span class="required">*</span></label>
+            <div class="input-wrap">
+              <i class="fa-regular fa-user input-icon"></i>
+              <input class="form-control form-control--icon" type="text"
+                placeholder="eco_shopper" [(ngModel)]="username" name="username" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Full name <span class="required">*</span></label>
+            <div class="input-wrap">
+              <i class="fa-regular fa-id-card input-icon"></i>
+              <input class="form-control form-control--icon" type="text"
+                placeholder="Jane Smith" [(ngModel)]="name" name="name" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email address <span class="required">*</span></label>
+          <div class="input-wrap">
+            <i class="fa-regular fa-envelope input-icon"></i>
+            <input class="form-control form-control--icon" type="email"
+              placeholder="you@example.com" [(ngModel)]="email" name="email" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Password <span class="required">*</span></label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-lock input-icon"></i>
+              <input class="form-control form-control--icon" type="password"
+                placeholder="Min 8 characters" [(ngModel)]="password" name="password" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm password <span class="required">*</span></label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-lock input-icon"></i>
+              <input class="form-control form-control--icon" type="password"
+                placeholder="••••••••" [(ngModel)]="passwordConfirm" name="passwordConfirm" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" style="flex:2">
+            <label class="form-label">Address <span class="required">*</span></label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-location-dot input-icon"></i>
+              <input class="form-control form-control--icon" type="text"
+                placeholder="123 Green Street, City" [(ngModel)]="address" name="address" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone <span class="required">*</span></label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-phone input-icon"></i>
+              <input class="form-control form-control--icon" type="text"
+                placeholder="555-0100" [(ngModel)]="phone" name="phone" />
+            </div>
+          </div>
+        </div>
+
+        <div class="alert-error" *ngIf="error">
+          <i class="fa-solid fa-circle-exclamation"></i> {{ error }}
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg auth-submit" [disabled]="loading">
+          <span *ngIf="!loading">
+            Create {{ selectedRole === 'ROLE_BUYER' ? 'Buyer' : 'Seller' }} account
+            <i class="fa-solid fa-arrow-right"></i>
+          </span>
+          <span *ngIf="loading">
+            <i class="fa-solid fa-circle-notch fa-spin"></i> Creating…
+          </span>
+        </button>
+      </form>
+    </div>
+
   </div>
 </div>

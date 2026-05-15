@@ -1,35 +1,120 @@
-/* register.component.css - inherits auth globals from styles.css */
+/* register.component.css */
+
+.role-choose-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #3d5c3e;
+  margin-bottom: 20px;
+}
+
+.role-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.role-card {
+  border: 2px solid #e8f0e9;
+  border-radius: 18px;
+  padding: 24px 20px;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.role-card:hover {
+  border-color: #2e7d32;
+  box-shadow: 0 8px 32px rgba(46,125,50,.12);
+  transform: translateY(-4px);
+}
+
+.role-card__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+.role-card__icon--buyer  { background: #e8f5e9; color: #2e7d32; }
+.role-card__icon--seller { background: #e3f2fd; color: #1565c0; }
+
+.role-card__title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1b4d1e;
+  font-family: 'Syne', sans-serif;
+}
+.role-card__desc {
+  font-size: 13px;
+  color: #607868;
+  line-height: 1.55;
+}
+.role-card__features {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.role-card__features span {
+  font-size: 12px;
+  color: #3d5c3e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.role-card__features i {
+  color: #2e7d32;
+  font-size: 10px;
+}
+.role-card__btn {
+  margin-top: 8px;
+  width: 100%;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  border-radius: 9999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2e7d32;
+}
+.role-badge--seller {
+  background: #e3f2fd;
+  border-color: #90caf9;
+  color: #1565c0;
+}
+
+.required { color: #c62828; margin-left: 2px; }
 
 .auth-success {
   text-align: center;
   padding: 48px 24px;
-  animation: fadeIn 0.4s ease;
 }
 .auth-success__icon {
-  width: 72px;
-  height: 72px;
-  background: #2e7d32;
+  width: 72px; height: 72px;
+  background: #2e7d32; color: white;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 24px;
   font-size: 32px;
-  color: white;
-  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 24px;
+  animation: popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
 }
 @keyframes popIn {
   from { transform: scale(0); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  to   { transform: scale(1); opacity: 1; }
 }
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+.auth-success h2 { font-size: 24px; font-weight: 800; color: #1b4d1e; margin-bottom: 8px; }
+.auth-success p  { color: #607868; }
+
+@media (max-width: 640px) {
+  .role-cards { grid-template-columns: 1fr; }
 }
-.auth-success h2 {
-  font-size: 24px;
-  font-weight: 800;
-  color: #1b4d1e;
-  margin-bottom: 8px;
-}
-.auth-success p { color: #607868; font-size: 15px; }

@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.project.gogreen.enums.Role;
 import com.project.gogreen.model.cart.CartItem;
 
@@ -13,6 +13,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -46,65 +47,63 @@ public class User {
     @Column(nullable = false, length = 15)
     private String phone;
 
-    // ── NEW: Role field stored as VARCHAR("ROLE_BUYER" / "ROLE_SELLER") ──
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private Role role = Role.ROLE_BUYER; // safe default
+    private Role role = Role.ROLE_BUYER;
 
-    @JsonManagedReference
-    @OneToMany(mappedBy = "pk.user", cascade = CascadeType.ALL)
+    // KEY FIX: removed @JsonManagedReference — it was causing infinite loop
+    // with CartItemPK.user (which lost its @JsonBackReference).
+    // @JsonIgnoreProperties breaks the cycle cleanly:
+    //   User → cartItems → CartItemPK → ignore "user" field → stop
+    @JsonIgnoreProperties({"pk.user", "pk.product.image"})
+    @OneToMany(mappedBy = "pk.user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<CartItem> cartItems = new ArrayList<>();
 
-    public User() {
-    }
+    public User() {}
 
-    /** Original constructor kept intact — role defaults to ROLE_BUYER. */
     public User(String username, String password, String email,
                 String name, String address, String phone) {
-        this.username = username;
-        this.password = password;
-        this.email    = email;
-        this.name     = name;
-        this.address  = address;
-        this.phone    = phone;
-        this.role     = Role.ROLE_BUYER;
+        this.username  = username;
+        this.password  = password;
+        this.email     = email;
+        this.name      = name;
+        this.address   = address;
+        this.phone     = phone;
+        this.role      = Role.ROLE_BUYER;
         this.cartItems = new ArrayList<>();
     }
 
-    /** New constructor that accepts an explicit role. */
     public User(String username, String password, String email,
                 String name, String address, String phone, Role role) {
         this(username, password, email, name, address, phone);
         this.role = role;
     }
 
-    // ── Getters & Setters ─────────────────────────────────────────────
+    public long getId()                        { return id; }
+    public void setId(long id)                 { this.id = id; }
 
-    public long getId() { return id; }
-    public void setId(long id) { this.id = id; }
+    public String getUsername()                { return username; }
+    public void setUsername(String username)   { this.username = username; }
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
+    public String getPassword()                { return password; }
+    public void setPassword(String password)   { this.password = password; }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public String getEmail()                   { return email; }
+    public void setEmail(String email)         { this.email = email; }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getName()                    { return name; }
+    public void setName(String name)           { this.name = name; }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getAddress()                 { return address; }
+    public void setAddress(String address)     { this.address = address; }
 
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
+    public String getPhone()                   { return phone; }
+    public void setPhone(String phone)         { this.phone = phone; }
 
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
+    public Role getRole()                      { return role; }
+    public void setRole(Role role)             { this.role = role; }
 
-    public Role getRole() { return role; }
-    public void setRole(Role role) { this.role = role; }
-
-    public List<CartItem> getCartItems() { return cartItems; }
+    public List<CartItem> getCartItems()               { return cartItems; }
     public void setCartItems(List<CartItem> cartItems) { this.cartItems = cartItems; }
 
     @Transient
@@ -118,12 +117,6 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", email='" + email + '\'' +
-                ", name='" + name + '\'' +
-                ", role=" + role +
-                '}';
+        return "User{id=" + id + ", username='" + username + "', role=" + role + "}";
     }
 }

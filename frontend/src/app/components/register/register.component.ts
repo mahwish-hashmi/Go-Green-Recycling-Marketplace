@@ -8,30 +8,40 @@ import { UsersService } from 'src/app/services/users.service';
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent implements OnInit {
-  public username: string = '';
-  public password: string = '';
-  public passwordConfirm: string = '';
-  public email: string = '';
-  public address: string = '';
-  public phone: string = '';
-  public name: string = '';
-  public error: string = '';
-  public loading: boolean = false;
-  public success: boolean = false;
+
+  // Step 1 = choose role, Step 2 = fill form
+  step: number = 1;
+  selectedRole: 'ROLE_BUYER' | 'ROLE_SELLER' = 'ROLE_BUYER';
+
+  username    = '';
+  password    = '';
+  passwordConfirm = '';
+  email       = '';
+  address     = '';
+  phone       = '';
+  name        = '';
+  storeName   = '';   // seller only
+
+  error   = '';
+  loading = false;
+  success = false;
 
   constructor(private usersService: UsersService, private router: Router) {}
 
   ngOnInit(): void {
     if (localStorage.getItem('token')) {
-      this.router.navigateByUrl('/account');
+      this.redirectByRole();
     }
   }
 
-  register() {
-    this.error = '';
+  selectRole(role: 'ROLE_BUYER' | 'ROLE_SELLER'): void {
+    this.selectedRole = role;
+    this.step = 2;
+  }
 
-    if (!this.username || !this.password || !this.email ||
-        !this.name || !this.address || !this.phone) {
+  register(): void {
+    this.error = '';
+    if (!this.username || !this.password || !this.email || !this.name || !this.address || !this.phone) {
       this.error = 'All fields are required';
       return;
     }
@@ -48,19 +58,18 @@ export class RegisterComponent implements OnInit {
 
     this.usersService.register(
       this.username, this.password, this.email,
-      this.name, this.address, this.phone
+      this.name, this.address, this.phone, this.selectedRole
     ).subscribe({
       next: (response: any) => {
         this.loading = false;
         this.success = true;
-
-        if (response && response.token) {
+        if (response?.token) {
           localStorage.setItem('token', response.token);
-          localStorage.setItem('userRole', response.role || 'ROLE_BUYER');
+          localStorage.setItem('userRole', response.role || this.selectedRole);
           localStorage.setItem('username', this.username);
-          // Short delay so user sees success message
           setTimeout(() => {
-            this.router.navigateByUrl('/account').then(() => window.location.reload());
+            this.redirectByRole();
+            window.location.reload();
           }, 1200);
         } else {
           setTimeout(() => this.router.navigateByUrl('/login'), 1200);
@@ -69,15 +78,22 @@ export class RegisterComponent implements OnInit {
       error: (err: any) => {
         this.loading = false;
         if (err.status === 0) {
-          this.error = 'Cannot connect to server. Is the backend running on port 8080?';
+          this.error = 'Cannot connect to server. Is the backend running?';
         } else if (err.status === 400) {
-          this.error = typeof err.error === 'string' ? err.error : 'Invalid registration details.';
-        } else if (err.status === 401 || err.status === 403) {
-          this.error = 'Security config error — /register must be public in WebSecurityConfig.';
+          this.error = typeof err.error === 'string' ? err.error : 'Invalid details.';
         } else {
           this.error = 'Registration failed. Please try again.';
         }
       }
     });
+  }
+
+  redirectByRole(): void {
+    const role = localStorage.getItem('userRole');
+    if (role === 'ROLE_SELLER') {
+      this.router.navigateByUrl('/seller');
+    } else {
+      this.router.navigateByUrl('/shop');
+    }
   }
 }

@@ -10,14 +10,15 @@ export class UsersService {
   constructor(private http: HttpClient) {}
 
   register(username: string, password: string, email: string,
-           name: string, address: string, phone: string): Observable<any> {
+           name: string, address: string, phone: string,
+           role: string = 'ROLE_BUYER'): Observable<any> {
     return this.http.post<any>(`${environment.API_URL}/register`, {
-      username, password, email, name, address, phone
+      username, password, email, name, address, phone, role
     });
   }
 
-  login(username: string, password: string): Observable<any> {
-    return this.http.post<any>(`${environment.API_URL}/login`, { username, password });
+  login(username: string, password: string): Observable<Token> {
+    return this.http.post<Token>(`${environment.API_URL}/login`, { username, password });
   }
 
   createToken(username: string): Observable<Token> {

@@ -1,6 +1,5 @@
 <!-- product-detail.component.html -->
-
-<div class="toast" *ngIf="toast"><i class="fa-solid fa-check-circle"></i> {{ toast }}</div>
+<div class="toast-notif" *ngIf="toast"><i class="fa-solid fa-check-circle"></i> {{ toast }}</div>
 
 <div class="detail-page">
   <div class="detail-page__inner">
@@ -12,36 +11,34 @@
     </nav>
 
     <!-- Not found -->
-    <div class="not-found anim-scale-in" *ngIf="product === null">
+    <div class="not-found" *ngIf="product === null">
       <i class="fa-solid fa-box-open not-found__icon"></i>
       <h2>Product not found</h2>
-      <p>This item may have been removed or doesn't exist.</p>
+      <p>This item may have been removed.</p>
       <a routerLink="/shop" class="btn btn-primary">Return to shop</a>
     </div>
 
-    <!-- Loading skeleton -->
+    <!-- Loading -->
     <div class="detail-skeleton" *ngIf="product === undefined">
       <div class="detail-skeleton__img skeleton"></div>
       <div class="detail-skeleton__info">
-        <div class="skeleton" style="height:14px;width:120px;margin-bottom:16px;"></div>
-        <div class="skeleton" style="height:36px;width:80%;margin-bottom:12px;"></div>
-        <div class="skeleton" style="height:14px;width:40%;margin-bottom:32px;"></div>
-        <div class="skeleton" style="height:80px;width:100%;margin-bottom:32px;"></div>
-        <div class="skeleton" style="height:52px;width:100%;border-radius:14px;"></div>
+        <div class="skeleton" style="height:14px;width:120px;margin-bottom:16px;border-radius:6px;"></div>
+        <div class="skeleton" style="height:36px;width:80%;margin-bottom:12px;border-radius:8px;"></div>
+        <div class="skeleton" style="height:80px;width:100%;margin-bottom:32px;border-radius:10px;"></div>
+        <div class="skeleton" style="height:52px;width:180px;border-radius:14px;"></div>
       </div>
     </div>
 
     <!-- Product -->
-    <div class="detail-layout anim-fade-up" *ngIf="product !== undefined && product !== null">
+    <div class="detail-layout anim-fade-up"
+      *ngIf="product !== undefined && product !== null">
 
       <!-- Image -->
       <div class="detail-img-panel">
         <div class="detail-img-wrap">
-          <div
-            class="detail-img"
+          <div class="detail-img"
             [class.detail-img--placeholder]="!product.imageUrl"
-            [style.backgroundImage]="product.imageUrl ? 'url(' + product.imageUrl + ')' : null"
-          >
+            [style.backgroundImage]="product.imageUrl ? 'url(' + product.imageUrl + ')' : null">
             <i class="fa-solid fa-seedling detail-placeholder-icon" *ngIf="!product.imageUrl"></i>
           </div>
           <div class="detail-img-overlay"></div>
@@ -61,47 +58,67 @@
           Listed {{ product.addedOn | date:'MMMM d, yyyy' }}
         </p>
 
-        <hr class="divider" style="margin:24px 0;">
+        <hr class="divider" style="margin:20px 0;">
 
         <div class="detail-price-row">
           <div class="detail-price">${{ product.price | number:'1.2-2' }}</div>
           <div class="detail-availability">
-            <i class="fa-solid fa-circle-check" style="color:#2e7d32;font-size:12px;"></i>
-            In stock
+            <i class="fa-solid fa-circle-check" style="color:#2e7d32;font-size:12px;"></i> In stock
           </div>
         </div>
 
-        <hr class="divider" style="margin:24px 0;">
+        <hr class="divider" style="margin:20px 0;">
 
-        <div class="detail-desc-section" style="margin-bottom:28px;">
+        <div style="margin-bottom:28px;">
           <h3 class="detail-desc-title">About this product</h3>
           <p class="detail-desc">{{ product.description }}</p>
         </div>
 
+        <!-- Actions -->
         <div class="detail-actions">
-          <button
-            *ngIf="!isProductInCart"
+          <!-- Guest -->
+          <a *ngIf="!isLoggedIn" routerLink="/login"
+            class="btn btn-primary btn-lg detail-cta">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign in to buy
+          </a>
+
+          <!-- Buyer: not in cart -->
+          <button *ngIf="isBuyer && !isProductInCart"
             class="btn btn-primary btn-lg detail-cta"
-            [disabled]="addingToCart || (!isLoggedIn && false)"
-            (click)="isLoggedIn ? addToCart() : null"
-            [routerLink]="isLoggedIn ? null : '/login'"
-          >
-            <i class="fa-solid fa-basket-shopping" *ngIf="!addingToCart"></i>
+            [disabled]="addingToCart" (click)="addToCart()">
             <i class="fa-solid fa-circle-notch fa-spin" *ngIf="addingToCart"></i>
-            {{ isLoggedIn ? 'Add to cart' : 'Sign in to add to cart' }}
+            <i class="fa-solid fa-basket-shopping" *ngIf="!addingToCart"></i>
+            {{ addingToCart ? 'Adding…' : 'Add to cart' }}
           </button>
-          <button *ngIf="isProductInCart" class="btn btn-lg detail-cta detail-cta--in-cart" disabled>
-            <i class="fa-solid fa-check"></i> In your cart
+
+          <!-- Buyer: in cart -->
+          <div *ngIf="isBuyer && isProductInCart" class="in-cart-row">
+            <button class="btn btn-lg detail-cta detail-cta--in-cart" disabled>
+              <i class="fa-solid fa-check"></i> In your cart
+            </button>
+            <a routerLink="/cart" class="btn btn-outline btn-lg">
+              <i class="fa-solid fa-basket-shopping"></i> View cart
+            </a>
+          </div>
+
+          <!-- Buyer: wishlist -->
+          <button *ngIf="isBuyer" class="btn btn-outline wishlist-detail-btn"
+            (click)="toggleWishlist()"
+            [class.wishlist-detail-btn--active]="isWishlisted">
+            <i class="fa-solid fa-heart" *ngIf="isWishlisted"></i>
+            <i class="fa-regular fa-heart" *ngIf="!isWishlisted"></i>
+            {{ isWishlisted ? 'Wishlisted' : 'Add to wishlist' }}
           </button>
         </div>
 
+        <!-- Trust badges -->
         <div class="trust-badges">
           <div class="trust-badge"><i class="fa-solid fa-shield-halved"></i><span>Buyer protection</span></div>
           <div class="trust-badge"><i class="fa-solid fa-truck-fast"></i><span>Fast shipping</span></div>
           <div class="trust-badge"><i class="fa-solid fa-arrow-rotate-left"></i><span>Easy returns</span></div>
         </div>
-      </div>
 
+      </div>
     </div>
   </div>
 </div>

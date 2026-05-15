@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from 'src/app/models/Product';
 import { ProductsService } from 'src/app/services/products.service';
+import { WishlistService } from 'src/app/services/wishlist.service';
 
 @Component({
   selector: 'app-product-list',
@@ -9,31 +10,36 @@ import { ProductsService } from 'src/app/services/products.service';
   styleUrls: ['./product-list.component.css']
 })
 export class ProductListComponent implements OnInit {
-  public term: string = '';
-  public products: Product[] | null = null;
-  public hoveredId: any = null;
-  public isLoggedIn: boolean = false;
-  public userRole: string = '';
-  public toast: string = '';
+  term      = '';
+  products: Product[] | null = null;
+  hoveredId: any = null;
+  isLoggedIn = false;
+  isBuyer    = false;
+  isSeller   = false;
+  toast      = '';
 
-  get filteredCount(): number {
-    if (!this.products) return 0;
+  get filteredProducts(): Product[] {
+    if (!this.products) return [];
+    if (!this.term) return this.products;
     return this.products.filter(p =>
-      p.name.toLowerCase().includes(this.term.toLowerCase())
-    ).length;
+      p.name.toLowerCase().includes(this.term.toLowerCase()) ||
+      p.description?.toLowerCase().includes(this.term.toLowerCase())
+    );
   }
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private productsService: ProductsService
+    private productsService: ProductsService,
+    private wishlistService: WishlistService
   ) {
     this.term = route.snapshot.paramMap.get('term') || '';
   }
 
   ngOnInit(): void {
     this.isLoggedIn = !!localStorage.getItem('token');
-    this.userRole = localStorage.getItem('userRole') || '';
+    this.isBuyer    = localStorage.getItem('userRole') === 'ROLE_BUYER';
+    this.isSeller   = localStorage.getItem('userRole') === 'ROLE_SELLER';
     this.loadProducts();
   }
 
@@ -42,24 +48,24 @@ export class ProductListComponent implements OnInit {
       next: (products: Product[]) => {
         this.products = products.map(p => ({
           ...p,
-          imageUrl: p.image
-            ? 'data:image/jpeg;base64,' + p.image
-            : null
+          imageUrl: p.image ? 'data:image/jpeg;base64,' + p.image : null
         }));
       },
-      error: (err) => {
-        console.error('Failed to load products:', err);
-        this.products = [];
-      }
+      error: () => { this.products = []; }
     });
   }
 
-  addToCart(productId: any): void {
-    if (!this.isLoggedIn) {
-      this.router.navigateByUrl('/login');
-      return;
-    }
-    this.showToast('Added to cart! 🛒');
+  isWishlisted(product: Product): boolean {
+    return this.wishlistService.isWishlisted(product.id);
+  }
+
+  toggleWishlist(product: Product, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    if (!this.isLoggedIn) { this.router.navigateByUrl('/login'); return; }
+    if (!this.isBuyer) { this.showToast('Only buyers can use wishlist'); return; }
+    const added = this.wishlistService.toggle(product);
+    this.showToast(added ? 'Added to wishlist ❤️' : 'Removed from wishlist');
   }
 
   showToast(msg: string): void {

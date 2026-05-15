@@ -1,0 +1,53 @@
+<!-- orders.component.html -->
+<div class="orders-page">
+  <div class="orders-inner">
+    <div class="page-header">
+      <div>
+        <span class="section-label">Purchase history</span>
+        <h1 class="page-title">My Orders</h1>
+      </div>
+      <a routerLink="/shop" class="btn btn-outline btn-sm">
+        <i class="fa-solid fa-seedling"></i> Shop more
+      </a>
+    </div>
+
+    <!-- Empty -->
+    <div class="orders-empty" *ngIf="orders.length === 0">
+      <i class="fa-solid fa-box-open orders-empty__icon"></i>
+      <h2>No orders yet</h2>
+      <p>Your order history will appear here after your first purchase.</p>
+      <a routerLink="/shop" class="btn btn-primary btn-lg">Start shopping</a>
+    </div>
+
+    <!-- Orders list -->
+    <div class="orders-list" *ngIf="orders.length > 0">
+      <div class="order-card" *ngFor="let order of orders">
+        <div class="order-card__header">
+          <div>
+            <span class="order-card__id">Order #{{ order.id }}</span>
+            <span class="order-card__date">{{ order.date | date:'MMM d, yyyy' }}</span>
+          </div>
+          <span class="order-status" [class.order-status--delivered]="order.status === 'Delivered'"
+            [class.order-status--shipped]="order.status === 'Shipped'"
+            [class.order-status--processing]="order.status === 'Processing'">
+            {{ order.status }}
+          </span>
+        </div>
+        <div class="order-card__items">
+          <div class="order-item" *ngFor="let item of order.items">
+            <span class="order-item__name">{{ item.name }}</span>
+            <span class="order-item__qty">× {{ item.qty }}</span>
+            <span class="order-item__price">${{ (item.price * item.qty) | number:'1.2-2' }}</span>
+          </div>
+        </div>
+        <div class="order-card__footer">
+          <span class="order-eco-note">
+            <i class="fa-solid fa-leaf"></i>
+            ~{{ (order.total * 0.12) | number:'1.1-1' }} kg CO₂ saved
+          </span>
+          <span class="order-total">Total: <strong>${{ order.total | number:'1.2-2' }}</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

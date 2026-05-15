@@ -1,0 +1,63 @@
+<!-- wishlist.component.html -->
+<div class="toast-notif" *ngIf="toast"><i class="fa-solid fa-check-circle"></i> {{ toast }}</div>
+
+<div class="wishlist-page">
+  <div class="wishlist-inner">
+
+    <div class="page-header">
+      <div>
+        <span class="section-label">Saved items</span>
+        <h1 class="page-title">My Wishlist</h1>
+      </div>
+      <a routerLink="/shop" class="btn btn-outline btn-sm">
+        <i class="fa-solid fa-arrow-left"></i> Continue shopping
+      </a>
+    </div>
+
+    <!-- Empty -->
+    <div class="wishlist-empty" *ngIf="items.length === 0">
+      <i class="fa-regular fa-heart wishlist-empty__icon"></i>
+      <h2>Your wishlist is empty</h2>
+      <p>Save your favourite eco products here for later.</p>
+      <a routerLink="/shop" class="btn btn-primary btn-lg">
+        <i class="fa-solid fa-seedling"></i> Browse products
+      </a>
+    </div>
+
+    <!-- Grid -->
+    <div class="wishlist-grid" *ngIf="items.length > 0">
+      <div class="wishlist-card" *ngFor="let product of items">
+        <div class="wishlist-card__img-wrap">
+          <div class="wishlist-card__img"
+            [style.backgroundImage]="getImageUrl(product) ? 'url(' + getImageUrl(product) + ')' : null"
+            [class.wishlist-card__img--placeholder]="!getImageUrl(product)">
+            <i class="fa-solid fa-seedling" *ngIf="!getImageUrl(product)"></i>
+          </div>
+          <button class="wishlist-card__remove" (click)="remove(product)" title="Remove from wishlist">
+            <i class="fa-solid fa-heart-crack"></i>
+          </button>
+          <span class="eco-badge"><i class="fa-solid fa-leaf"></i> Eco</span>
+        </div>
+        <div class="wishlist-card__body">
+          <a [routerLink]="['/shop/products', product.id]" class="wishlist-card__name">
+            {{ product.name }}
+          </a>
+          <p class="wishlist-card__desc">
+            {{ product.description | slice:0:60 }}{{ product.description?.length > 60 ? '…' : '' }}
+          </p>
+          <div class="wishlist-card__footer">
+            <span class="wishlist-card__price">${{ product.price | number:'1.2-2' }}</span>
+            <button class="btn btn-primary btn-sm"
+              (click)="addToCart(product)"
+              [disabled]="addingId === product.id">
+              <i class="fa-solid fa-circle-notch fa-spin" *ngIf="addingId === product.id"></i>
+              <i class="fa-solid fa-basket-shopping" *ngIf="addingId !== product.id"></i>
+              {{ addingId === product.id ? 'Adding…' : 'Add to cart' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,20 +1,20 @@
 <!-- seller-dashboard.component.html -->
 
 <!-- Toast -->
-<div class="sd-toast" [class.sd-toast--error]="toastType === 'error'" *ngIf="toast">
-  <i class="fa-solid" [class.fa-check-circle]="toastType === 'success'" [class.fa-circle-exclamation]="toastType === 'error'"></i>
+<div class="sd-toast" [class.sd-toast--error]="toastType==='error'" *ngIf="toast">
+  <i class="fa-solid" [class.fa-check-circle]="toastType==='success'" [class.fa-circle-exclamation]="toastType==='error'"></i>
   {{ toast }}
 </div>
 
 <!-- Delete confirm modal -->
-<div class="sd-modal-bg" *ngIf="deleteConfirmId !== null" (click)="deleteConfirmId = null">
+<div class="sd-modal-bg" *ngIf="deleteConfirmId !== null" (click)="deleteConfirmId=null">
   <div class="sd-modal" (click)="$event.stopPropagation()">
     <div class="sd-modal__icon"><i class="fa-solid fa-trash"></i></div>
     <h3>Delete product?</h3>
     <p>This action cannot be undone.</p>
     <div class="sd-modal__actions">
-      <button class="btn btn-ghost" (click)="deleteConfirmId = null">Cancel</button>
-      <button class="btn btn-danger-solid" (click)="deleteProduct(deleteConfirmId)">Delete</button>
+      <button class="btn btn-ghost" (click)="deleteConfirmId=null">Cancel</button>
+      <button class="sd-btn-danger" (click)="deleteProduct(deleteConfirmId)">Delete</button>
     </div>
   </div>
 </div>
@@ -27,7 +27,6 @@
       <span class="sd-brand-icon"><i class="fa-solid fa-leaf"></i></span>
       <span class="sd-brand-text">Go<strong>Green</strong></span>
     </div>
-
     <nav class="sd-nav">
       <div class="sd-nav__label">Seller Tools</div>
       <a class="sd-nav__item sd-nav__item--active">
@@ -40,16 +39,17 @@
         <i class="fa-solid fa-store"></i> View Store
       </a>
     </nav>
-
-    <div class="sd-nav__label" style="margin-top:auto;">Account</div>
-    <nav class="sd-nav">
-      <a class="sd-nav__item" routerLink="/account">
-        <i class="fa-solid fa-user"></i> Profile
-      </a>
-      <a class="sd-nav__item sd-nav__item--danger" (click)="logout()">
-        <i class="fa-solid fa-right-from-bracket"></i> Sign out
-      </a>
-    </nav>
+    <div style="margin-top:auto;">
+      <div class="sd-nav__label">Account</div>
+      <nav class="sd-nav">
+        <a class="sd-nav__item" routerLink="/account">
+          <i class="fa-solid fa-user"></i> Profile
+        </a>
+        <a class="sd-nav__item sd-nav__item--danger" (click)="logout()">
+          <i class="fa-solid fa-right-from-bracket"></i> Sign out
+        </a>
+      </nav>
+    </div>
   </aside>
 
   <!-- ── Main ── -->
@@ -59,7 +59,9 @@
     <header class="sd-header">
       <div>
         <h1 class="sd-header__title">Seller Dashboard</h1>
-        <p class="sd-header__sub" *ngIf="user">Welcome back, <strong>{{ user.name || user.username }}</strong> 👋</p>
+        <p class="sd-header__sub" *ngIf="user">
+          Welcome back, <strong>{{ user.name || user.username }}</strong> 👋
+        </p>
       </div>
       <button class="btn btn-primary" (click)="openAddForm()">
         <i class="fa-solid fa-plus"></i> Add Product
@@ -86,20 +88,22 @@
         <div class="sd-card__icon sd-card__icon--amber"><i class="fa-solid fa-chart-line"></i></div>
         <div class="sd-card__body">
           <div class="sd-card__num">$0</div>
-          <div class="sd-card__label">Total Revenue</div>
+          <div class="sd-card__label">Revenue</div>
         </div>
       </div>
       <div class="sd-card">
-        <div class="sd-card__icon sd-card__icon--purple"><i class="fa-solid fa-eye"></i></div>
+        <div class="sd-card__icon sd-card__icon--purple"><i class="fa-solid fa-images"></i></div>
         <div class="sd-card__body">
-          <div class="sd-card__num">—</div>
-          <div class="sd-card__label">Product Views</div>
+          <div class="sd-card__num">
+            {{ products.length }}
+          </div>
+          <div class="sd-card__label">With Images</div>
         </div>
       </div>
     </div>
 
-    <!-- Add/Edit Form -->
-    <div class="sd-form-panel anim-scale-in" *ngIf="showAddForm">
+    <!-- ── Add / Edit Form ── -->
+    <div class="sd-form-panel anim-scale-in" *ngIf="showForm">
       <div class="sd-form-panel__header">
         <h2>{{ editingProduct ? 'Edit Product' : 'Add New Product' }}</h2>
         <button class="btn btn-ghost btn-sm" (click)="closeForm()">
@@ -107,42 +111,81 @@
         </button>
       </div>
       <div class="sd-form-body">
-        <div class="form-group">
-          <label class="form-label">Product name</label>
-          <input class="form-control" type="text" [(ngModel)]="formName" placeholder="e.g. Bamboo Water Bottle" />
+        <div class="sd-form-cols">
+
+          <!-- Left: text fields -->
+          <div class="sd-form-text">
+            <div class="form-group">
+              <label class="form-label">Product name <span class="required">*</span></label>
+              <input class="form-control" type="text" [(ngModel)]="formName"
+                placeholder="e.g. Bamboo Water Bottle" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description <span class="required">*</span></label>
+              <textarea class="form-control" rows="4" [(ngModel)]="formDescription"
+                placeholder="Describe the product, materials, eco benefits…"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Price (USD) <span class="required">*</span></label>
+              <div class="price-input-wrap">
+                <span class="price-symbol">$</span>
+                <input class="form-control price-input" type="number"
+                  [(ngModel)]="formPrice" placeholder="0.00" min="0.01" step="0.01" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: image upload -->
+          <div class="sd-form-image">
+            <label class="form-label">Product image <span class="form-hint">(optional, max 5MB)</span></label>
+
+            <!-- Preview -->
+            <div class="img-upload-area" *ngIf="formImagePreview">
+              <img [src]="formImagePreview" class="img-preview" alt="Preview" />
+              <button class="img-remove-btn" (click)="removeImage()" type="button">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <!-- Drop zone -->
+            <label class="img-dropzone" *ngIf="!formImagePreview" for="imgInput">
+              <i class="fa-solid fa-cloud-arrow-up img-dropzone__icon"></i>
+              <span class="img-dropzone__text">Click to upload image</span>
+              <span class="img-dropzone__hint">JPG, PNG, WebP — max 5MB</span>
+              <input
+                id="imgInput"
+                type="file"
+                accept="image/*"
+                class="img-input"
+                (change)="onImageSelected($event)"
+              />
+            </label>
+          </div>
+
         </div>
-        <div class="form-group">
-          <label class="form-label">Description</label>
-          <textarea class="form-control" rows="3" [(ngModel)]="formDescription"
-            placeholder="Describe the product, its eco benefits, materials used…"></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Price (USD)</label>
-          <input class="form-control" type="number" [(ngModel)]="formPrice" placeholder="e.g. 24.99" min="0" step="0.01" />
-        </div>
+
         <div class="sd-form-actions">
           <button class="btn btn-ghost" (click)="closeForm()">Cancel</button>
-          <button class="btn btn-primary" (click)="submitForm()">
-            <i class="fa-solid fa-check"></i>
+          <button class="btn btn-primary" (click)="submitForm()" [disabled]="submitting">
+            <i class="fa-solid fa-circle-notch fa-spin" *ngIf="submitting"></i>
+            <i class="fa-solid fa-check" *ngIf="!submitting"></i>
             {{ editingProduct ? 'Save changes' : 'Add product' }}
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Products table -->
+    <!-- ── Products table ── -->
     <div class="sd-table-panel">
       <div class="sd-table-panel__header">
         <h2>Your Products</h2>
         <span class="products-count">{{ products.length }} items</span>
       </div>
 
-      <!-- Loading -->
       <div class="sd-loading" *ngIf="loading">
         <i class="fa-solid fa-circle-notch fa-spin"></i> Loading products…
       </div>
 
-      <!-- Empty -->
       <div class="sd-empty" *ngIf="!loading && products.length === 0">
         <i class="fa-solid fa-box-open sd-empty__icon"></i>
         <h3>No products yet</h3>
@@ -152,13 +195,13 @@
         </button>
       </div>
 
-      <!-- Table -->
       <table class="sd-table" *ngIf="!loading && products.length > 0">
         <thead>
           <tr>
             <th>Product</th>
             <th>Description</th>
             <th>Price</th>
+            <th>Image</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
@@ -167,27 +210,32 @@
           <tr *ngFor="let product of products">
             <td>
               <div class="sd-table__product">
-                <div class="sd-table__img">
-                  <i class="fa-solid fa-seedling"></i>
+                <div class="sd-table__img"
+                  [style.backgroundImage]="product.imageUrl ? 'url(' + product.imageUrl + ')' : null"
+                  [class.sd-table__img--icon]="!product.imageUrl">
+                  <i class="fa-solid fa-seedling" *ngIf="!product.imageUrl"></i>
                 </div>
                 <span class="sd-table__name">{{ product.name }}</span>
               </div>
             </td>
             <td class="sd-table__desc">
-              {{ product.description | slice:0:60 }}{{ product.description?.length > 60 ? '…' : '' }}
+              {{ product.description | slice:0:55 }}{{ product.description?.length > 55 ? '…' : '' }}
             </td>
             <td>
               <span class="sd-table__price">${{ product.price | number:'1.2-2' }}</span>
             </td>
             <td>
-              <span class="sd-badge sd-badge--active">Active</span>
+              <span class="sd-badge" [class.sd-badge--active]="product.imageUrl" [class.sd-badge--none]="!product.imageUrl">
+                {{ product.imageUrl ? '✓ Image' : 'No image' }}
+              </span>
             </td>
+            <td><span class="sd-badge sd-badge--active">Active</span></td>
             <td>
               <div class="sd-table__actions">
-                <button class="btn btn-ghost btn-sm" (click)="openEditForm(product)" title="Edit">
+                <button class="btn btn-ghost btn-sm" (click)="openEditForm(product)">
                   <i class="fa-solid fa-pen"></i>
                 </button>
-                <button class="btn btn-danger btn-sm" (click)="confirmDelete(product.id)" title="Delete">
+                <button class="btn btn-danger btn-sm" (click)="confirmDelete(product.id)">
                   <i class="fa-solid fa-trash"></i>
                 </button>
               </div>

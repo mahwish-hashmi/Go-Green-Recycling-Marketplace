@@ -1,0 +1,55 @@
+/* orders.component.css */
+.orders-page { padding: 48px 28px 80px; }
+.orders-inner { max-width: 900px; margin: 0 auto; }
+
+.page-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 32px; flex-wrap: wrap; gap: 16px;
+}
+.section-label {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #388e3c; display: block; margin-bottom: 6px;
+}
+.page-title { font-size: 28px; font-weight: 800; color: #1b4d1e; font-family: 'Syne', sans-serif; }
+
+.orders-empty { text-align: center; padding: 80px 20px; }
+.orders-empty__icon { font-size: 56px; color: #c8e6c9; margin-bottom: 20px; display: block; }
+.orders-empty h2 { font-size: 24px; font-weight: 800; color: #1b4d1e; margin-bottom: 8px; }
+.orders-empty p { color: #607868; margin-bottom: 24px; }
+
+.orders-list { display: flex; flex-direction: column; gap: 16px; }
+
+.order-card {
+  background: white; border: 1px solid #e8f0e9; border-radius: 16px; overflow: hidden;
+}
+.order-card__header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid #f0f4f0; background: #fafcfa;
+}
+.order-card__id { font-weight: 700; color: #1b4d1e; display: block; }
+.order-card__date { font-size: 12px; color: #9aada4; }
+
+.order-status {
+  font-size: 12px; font-weight: 600; padding: 4px 12px;
+  border-radius: 9999px;
+}
+.order-status--processing { background: #fff8e1; color: #e65100; }
+.order-status--shipped    { background: #e3f2fd; color: #1565c0; }
+.order-status--delivered  { background: #e8f5e9; color: #2e7d32; }
+
+.order-card__items { padding: 16px 20px; }
+.order-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 0; border-bottom: 1px solid #f5f5f5; font-size: 14px;
+}
+.order-item:last-child { border-bottom: none; }
+.order-item__name { flex: 1; color: #3d5c3e; font-weight: 500; }
+.order-item__qty  { color: #9aada4; }
+.order-item__price { font-weight: 700; color: #1b4d1e; }
+
+.order-card__footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; border-top: 1px solid #f0f4f0; background: #fafcfa;
+}
+.order-eco-note { font-size: 12px; color: #2e7d32; display: flex; align-items: center; gap: 6px; }
+.order-total { font-size: 15px; color: #1b4d1e; }
