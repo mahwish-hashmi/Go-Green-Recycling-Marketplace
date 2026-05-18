@@ -27,26 +27,28 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
-        // getServletPath() returns path WITHOUT the context-path prefix (/api).
-        // So http://localhost:8080/api/login  → servletPath = /login
-        //    http://localhost:8080/api/user   → servletPath = /user
-        String path = request.getServletPath();
+        String path   = request.getServletPath();
+        String method = request.getMethod();
 
-        // Let public endpoints pass through without any JWT processing
-        // Matches the permitAll() paths in WebSecurityConfig exactly
-        if (path.equals("/login") ||
-            path.equals("/register") ||
-            path.startsWith("/products")) {
+        // Bypass JWT filter for public endpoints:
+        // - /login and /register: always public
+        // - GET /products, /products/{id}, /products/seller/{username}: public browsing
+        boolean isPublic =
+            path.equals("/login") ||
+            path.equals("/register");
+
+        if (isPublic) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // For all other paths, try to extract and validate the JWT token
+        // For all other paths — try to extract and validate JWT
         final String authHeader = request.getHeader("Authorization");
-        String username = null;
-        String jwtToken = null;
+        String username  = null;
+        String jwtToken  = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwtToken = authHeader.substring(7);
@@ -58,7 +60,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 logger.warn("JWT token has expired");
             }
         }
-        // Note: no warn when no token — public pages legitimately have no token
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);
@@ -67,7 +68,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities()
                     );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                authToken.setDetails(
+                    new WebAuthenticationDetailsSource().buildDetails(request)
+                );
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }

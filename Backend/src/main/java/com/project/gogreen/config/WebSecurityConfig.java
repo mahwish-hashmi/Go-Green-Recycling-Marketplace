@@ -35,15 +35,15 @@ public class WebSecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(jwtUserDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
-        return provider;
+        DaoAuthenticationProvider p = new DaoAuthenticationProvider();
+        p.setUserDetailsService(jwtUserDetailsService);
+        p.setPasswordEncoder(passwordEncoder());
+        return p;
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration c) throws Exception {
+        return c.getAuthenticationManager();
     }
 
     @Bean
@@ -53,27 +53,15 @@ public class WebSecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                /*
-                 * HOW PATHS WORK:
-                 * server.servlet.context-path = /api
-                 * Spring Security sees paths WITHOUT the context-path prefix.
-                 *
-                 * http://localhost:8080/api/login     → security path = /login
-                 * http://localhost:8080/api/register  → security path = /register
-                 * http://localhost:8080/api/user      → security path = /user  (NEEDS TOKEN)
-                 * http://localhost:8080/api/products  → security path = /products
-                 *
-                 * WRONG (old config):
-                 *   "/api/auth/login"   ← these paths don't exist, nothing matched
-                 *   "/user" in permitAll ← made /user public, breaking SecurityContextHolder
-                 */
+                // Public auth endpoints
                 .requestMatchers("/login", "/register").permitAll()
+                // Public product browsing — GET only
                 .requestMatchers("/products", "/products/**").permitAll()
-                // /user MUST be authenticated — it reads from SecurityContextHolder
+                // Everything else needs a valid JWT
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
@@ -82,18 +70,18 @@ public class WebSecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
-        configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS","PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList(
+        CorsConfiguration c = new CorsConfiguration();
+        c.setAllowedOrigins(List.of("http://localhost:4200"));
+        c.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS","PATCH"));
+        c.setAllowedHeaders(Arrays.asList(
             "Authorization","Content-Type","Accept","Origin",
             "Access-Control-Request-Method","Access-Control-Request-Headers"
         ));
-        configuration.setExposedHeaders(List.of("Authorization"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
+        c.setExposedHeaders(List.of("Authorization"));
+        c.setAllowCredentials(true);
+        c.setMaxAge(3600L);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/**", c);
         return source;
     }
 }

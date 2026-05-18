@@ -1,15 +1,27 @@
 package com.project.gogreen.controller;
 
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.project.gogreen.config.JwtUtil;
 import com.project.gogreen.model.Product;
@@ -21,21 +33,13 @@ import com.project.gogreen.service.ProductService;
 import com.project.gogreen.service.UserService;
 
 /**
- * CRITICAL: server.servlet.context-path = /api (in application.properties)
- *
- * This means Spring Boot already prefixes ALL endpoints with /api.
- * So DO NOT add @RequestMapping("/api") here — that would make
- * every URL become /api/api/... which gives 404.
- *
- * Correct URLs from the browser:
- *   GET  http://localhost:8080/api/products
- *   POST http://localhost:8080/api/users/1/cart/add/3
- *   POST http://localhost:8080/api/login   (JwtAuthenticationController)
+ * context-path = /api  →  all endpoints at http://localhost:8080/api/*
+ * NO @RequestMapping("/api") here — that would double the prefix.
  */
 @RestController
 public class APIController {
 
-    private final UserService userService;
+    private final UserService    userService;
     private final ProductService productService;
     private final CartItemService cartItemService;
 
@@ -48,12 +52,19 @@ public class APIController {
         this.cartItemService = cs;
     }
 
+    // ── Helper: get the username of the currently authenticated user ──
+
+    private String currentUsername() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null ? auth.getName() : null;
+    }
+
     // ── Token ─────────────────────────────────────────────────────────
 
     @PostMapping("/create-token")
     public ResponseEntity<?> createToken(@RequestBody Map<String, String> user) {
         Map<String, Object> r = new HashMap<>();
-        UserDetails ud = jwtUserDetailsService.loadUserByUsername(user.get("username"));
+        var ud = jwtUserDetailsService.loadUserByUsername(user.get("username"));
         r.put("token", jwtUtil.generateToken(ud));
         return ResponseEntity.ok(r);
     }
@@ -63,13 +74,13 @@ public class APIController {
     @GetMapping("/users")
     @PreAuthorize("hasAnyRole('BUYER','SELLER')")
     public ResponseEntity<List<User>> getUsers() {
-        return new ResponseEntity<>(userService.getUsers(), HttpStatus.OK);
+        return ResponseEntity.ok(userService.getUsers());
     }
 
     @GetMapping("/users/{id}")
     @PreAuthorize("hasAnyRole('BUYER','SELLER')")
     public ResponseEntity<User> getUser(@PathVariable Long id) {
-        return new ResponseEntity<>(userService.getUser(id), HttpStatus.OK);
+        return ResponseEntity.ok(userService.getUser(id));
     }
 
     @PutMapping("/users/{id}")
@@ -81,117 +92,163 @@ public class APIController {
             (String) u.get("email"),    (String) u.get("name"),
             (String) u.get("address"),  (String) u.get("phone")
         );
-        return new ResponseEntity<>(userService.updateUser(id, newUser), HttpStatus.OK);
+        return ResponseEntity.ok(userService.updateUser(id, newUser));
     }
 
-    // ── Products (GET is public, write is SELLER only) ────────────────
+    // ── Product GET — PUBLIC (no auth needed) ─────────────────────────
 
     @GetMapping("/products")
     public ResponseEntity<List<Product>> getProducts() {
-        return new ResponseEntity<>(productService.getProducts(), HttpStatus.OK);
+        return ResponseEntity.ok(productService.getProducts());
     }
 
     @GetMapping("/products/{id}")
     public ResponseEntity<Product> getProduct(@PathVariable Long id) {
-        return new ResponseEntity<>(productService.getProduct(id), HttpStatus.OK);
+        return ResponseEntity.ok(productService.getProduct(id));
     }
 
+    /** Returns only the products belonging to the logged-in seller */
+    @GetMapping("/seller/products")
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<List<Product>> getMyProducts() {
+        String username = currentUsername();
+        return ResponseEntity.ok(productService.getProductsBySeller(username));
+    }
+
+    /** Returns products for any seller by username (public store page) */
+    @GetMapping("/products/seller/{username}")
+    public ResponseEntity<List<Product>> getProductsBySeller(@PathVariable String username) {
+        return ResponseEntity.ok(productService.getProductsBySeller(username));
+    }
+
+    // ── Product WRITE — SELLER only ───────────────────────────────────
+
+    /**
+     * POST /products/upload  — add product WITH optional image (multipart)
+     * This is the endpoint the seller dashboard calls.
+     */
+    @PostMapping(value = "/products/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<Product> addProductWithImage(
+            @RequestParam("name")        String name,
+            @RequestParam("description") String description,
+            @RequestParam("price")       BigDecimal price,
+            @RequestParam(value = "image", required = false) MultipartFile image)
+            throws IOException {
+
+        Product product = new Product();
+        product.setName(name);
+        product.setDescription(description);
+        product.setPrice(price);
+        product.setSellerUsername(currentUsername()); // ← ownership tag
+
+        if (image != null && !image.isEmpty()) {
+            product.setImage(image.getBytes());
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                             .body(productService.addProduct(product));
+    }
+
+    /**
+     * POST /products  — add product via JSON (kept for backward compat)
+     */
     @PostMapping("/products")
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<Product> addProduct(@RequestBody Product product) {
-        return new ResponseEntity<>(productService.addProduct(product), HttpStatus.CREATED);
+        product.setSellerUsername(currentUsername());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                             .body(productService.addProduct(product));
     }
 
+    /**
+     * PUT /products/{id}/upload  — update product WITH optional new image (multipart)
+     * Verifies that the requesting seller owns the product.
+     */
+    @PutMapping(value = "/products/{id}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<Product> updateProductWithImage(
+            @PathVariable Long id,
+            @RequestParam("name")        String name,
+            @RequestParam("description") String description,
+            @RequestParam("price")       BigDecimal price,
+            @RequestParam(value = "image", required = false) MultipartFile image)
+            throws IOException {
+
+        Product updated = new Product();
+        updated.setName(name);
+        updated.setDescription(description);
+        updated.setPrice(price);
+        if (image != null && !image.isEmpty()) {
+            updated.setImage(image.getBytes());
+        }
+
+        return ResponseEntity.ok(
+            productService.updateProduct(id, updated, currentUsername())
+        );
+    }
+
+    /**
+     * PUT /products/{id}  — update via JSON, checks ownership
+     */
     @PutMapping("/products/{id}")
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<Product> updateProduct(@PathVariable Long id,
                                                   @RequestBody Product product) {
-        return new ResponseEntity<>(productService.updateProduct(id, product), HttpStatus.OK);
+        return ResponseEntity.ok(
+            productService.updateProduct(id, product, currentUsername())
+        );
     }
 
+    /**
+     * DELETE /products/{id}  — checks ownership before deleting
+     */
     @DeleteMapping("/products/{id}")
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        productService.deleteProduct(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        productService.deleteProduct(id, currentUsername());
+        return ResponseEntity.noContent().build();
     }
 
-    // ── Cart (BUYER only) ─────────────────────────────────────────────
+    // ── Cart — BUYER only ─────────────────────────────────────────────
 
-    /**
-     * GET /users/{id}/cart
-     * Returns list of CartItem objects WITH pk.user and pk.product populated.
-     */
     @GetMapping("/users/{id}/cart")
     @PreAuthorize("hasRole('BUYER')")
     public ResponseEntity<List<CartItem>> getUserCart(@PathVariable Long id) {
-        return new ResponseEntity<>(userService.getUser(id).getCartItems(), HttpStatus.OK);
+        return ResponseEntity.ok(userService.getUser(id).getCartItems());
     }
 
-    /**
-     * POST /users/{id}/cart/add/{productId}
-     * Adds product to cart. If already in cart, does nothing (no error).
-     */
     @PostMapping("/users/{id}/cart/add/{productId}")
     @PreAuthorize("hasRole('BUYER')")
-    public ResponseEntity<Map<String, String>> addToUserCart(
-            @PathVariable Long id,
-            @PathVariable Long productId) {
-
+    public ResponseEntity<Map<String, String>> addToCart(
+            @PathVariable Long id, @PathVariable Long productId) {
         User user       = userService.getUser(id);
         Product product = productService.getProduct(productId);
-
         try {
             cartItemService.addCartItem(new CartItem(user, product, 1));
-        } catch (Exception e) {
-            // Item already in cart — that's fine, just return success
-        }
-
-        Map<String, String> resp = new HashMap<>();
-        resp.put("status", "added");
-        resp.put("message", "Product added to cart successfully");
-        return new ResponseEntity<>(resp, HttpStatus.CREATED);
+        } catch (Exception ignored) {}
+        return ResponseEntity.status(HttpStatus.CREATED)
+                             .body(Map.of("status", "added"));
     }
 
-    /**
-     * PUT /users/{id}/cart/update/{productId}
-     * Updates quantity of a cart item.
-     */
     @PutMapping("/users/{id}/cart/update/{productId}")
     @PreAuthorize("hasRole('BUYER')")
-    public ResponseEntity<Map<String, String>> updateCartItem(
-            @PathVariable Long id,
-            @PathVariable Long productId,
+    public ResponseEntity<Map<String, String>> updateCart(
+            @PathVariable Long id, @PathVariable Long productId,
             @RequestBody Map<String, Object> body) {
-
         try {
             CartItem item = cartItemService.getCartItem(id, productId);
             item.setQuantity((Integer) body.get("quantity"));
             cartItemService.updateCartItem(item);
-        } catch (Exception e) {
-            // Item not found — ignore
-        }
-
-        Map<String, String> resp = new HashMap<>();
-        resp.put("status", "updated");
-        return ResponseEntity.ok(resp);
+        } catch (Exception ignored) {}
+        return ResponseEntity.ok(Map.of("status", "updated"));
     }
 
-    /**
-     * DELETE /users/{id}/cart/remove/{productId}
-     * Removes a product from the cart.
-     */
     @DeleteMapping("/users/{id}/cart/remove/{productId}")
     @PreAuthorize("hasRole('BUYER')")
-    public ResponseEntity<Void> removeCartItem(
-            @PathVariable Long id,
-            @PathVariable Long productId) {
-
-        try {
-            cartItemService.deleteCartItem(id, productId);
-        } catch (Exception e) {
-            // Item not found — that's fine
-        }
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<Void> removeFromCart(
+            @PathVariable Long id, @PathVariable Long productId) {
+        try { cartItemService.deleteCartItem(id, productId); } catch (Exception ignored) {}
+        return ResponseEntity.noContent().build();
     }
 }

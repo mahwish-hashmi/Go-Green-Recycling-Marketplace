@@ -18,6 +18,7 @@ import jakarta.persistence.TemporalType;
 @Entity
 @Table(name = "products")
 public class Product {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -40,67 +41,47 @@ public class Product {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private byte[] image;
 
-    public Product () {
-    }
+    /**
+     * NEW: The username of the seller who created this product.
+     * Used for multi-seller ownership — sellers can only edit/delete their own products.
+     * Nullable for backward compatibility with existing products.
+     */
+    @Column(nullable = true, length = 35)
+    private String sellerUsername;
 
-    public Product (String name, String description, BigDecimal price) {
-        this.name = name;
+    public Product() {}
+
+    public Product(String name, String description, BigDecimal price) {
+        this.name        = name;
         this.description = description;
-        this.price = price;
+        this.price       = price;
     }
 
-    public Product (String name, String description, BigDecimal price, byte[]image) {
-        this.name = name;
+    public Product(String name, String description, BigDecimal price, byte[] image) {
+        this.name        = name;
         this.description = description;
-        this.price = price;
-        this.image = image;
+        this.price       = price;
+        this.image       = image;
     }
 
-    public long getId() {
-        return id;
-    }
+    public long getId()                     { return id; }
+    public void setId(long id)              { this.id = id; }
 
-    public void setId(long id) {
-        this.id = id;
-    }
+    public String getName()                 { return name; }
+    public void setName(String name)        { this.name = name; }
 
-    public String getName() {
-        return name;
-    }
+    public String getDescription()              { return description; }
+    public void setDescription(String desc)     { this.description = desc; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public BigDecimal getPrice()                { return price; }
+    public void setPrice(BigDecimal price)      { this.price = price; }
 
-    public String getDescription() {
-        return description;
-    }
+    public Date getAddedOn()                    { return addedOn; }
+    public void setAddedOn(Date addedOn)        { this.addedOn = addedOn; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public byte[] getImage()                    { return image; }
+    public void setImage(byte[] image)          { this.image = image; }
 
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    public Date getAddedOn() {
-        return addedOn;
-    }
-
-    public void setAddedOn(Date addedOn) {
-        this.addedOn = addedOn;
-    }
-
-    public byte[] getImage() {
-        return image;
-    }
-
-    public void setImage(byte[] image) {
-        this.image = image;
-    }
+    public String getSellerUsername()               { return sellerUsername; }
+    public void setSellerUsername(String seller)    { this.sellerUsername = seller; }
 }
