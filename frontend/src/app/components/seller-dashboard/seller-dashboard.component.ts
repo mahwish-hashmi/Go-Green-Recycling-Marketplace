@@ -14,17 +14,17 @@ export class SellerDashboardComponent implements OnInit {
 
   user: User | null = null;
   products: Product[] = [];
-  loading = true;
-  showForm = false;
+  loading      = true;
+  showForm     = false;
   editingProduct: Product | null = null;
   deleteConfirmId: any = null;
-  toast = '';
-  toastType = 'success';
-  submitting = false;
+  toast        = '';
+  toastType    = 'success';
+  submitting   = false;
 
   // Form fields
-  formName = '';
-  formDescription = '';
+  formName         = '';
+  formDescription  = '';
   formPrice: number = 0;
   formImageFile: File | null = null;
   formImagePreview: string | null = null;
@@ -41,7 +41,7 @@ export class SellerDashboardComponent implements OnInit {
       return;
     }
     if (localStorage.getItem('userRole') !== 'ROLE_SELLER') {
-      this.router.navigateByUrl('/account');
+      this.router.navigateByUrl('/shop');
       return;
     }
     this.usersService.getUserByToken().subscribe({
@@ -53,7 +53,8 @@ export class SellerDashboardComponent implements OnInit {
 
   loadProducts(): void {
     this.loading = true;
-    this.productsService.getProducts().subscribe({
+    // KEY FIX: use getMyProducts() — returns only THIS seller's products
+    this.productsService.getMyProducts().subscribe({
       next: (products: Product[]) => {
         this.products = products.map(p => ({
           ...p,
@@ -61,63 +62,73 @@ export class SellerDashboardComponent implements OnInit {
         }));
         this.loading = false;
       },
-      error: () => { this.loading = false; }
+      error: (err) => {
+        console.error('Failed to load products:', err);
+        // Fallback: load all products if seller endpoint fails
+        this.productsService.getProducts().subscribe({
+          next: (all) => {
+            const username = this.user?.username || localStorage.getItem('username');
+            this.products = all
+              .filter(p => !p.sellerUsername || p.sellerUsername === username)
+              .map(p => ({
+                ...p,
+                imageUrl: p.image ? 'data:image/jpeg;base64,' + p.image : null
+              }));
+            this.loading = false;
+          },
+          error: () => { this.loading = false; }
+        });
+      }
     });
   }
 
   openAddForm(): void {
-    this.showForm = true;
-    this.editingProduct = null;
-    this.formName = '';
+    this.showForm        = true;
+    this.editingProduct  = null;
+    this.formName        = '';
     this.formDescription = '';
-    this.formPrice = 0;
-    this.formImageFile = null;
+    this.formPrice       = 0;
+    this.formImageFile   = null;
     this.formImagePreview = null;
   }
 
   openEditForm(product: Product): void {
-    this.editingProduct = product;
-    this.showForm = true;
-    this.formName = product.name;
+    this.editingProduct  = product;
+    this.showForm        = true;
+    this.formName        = product.name;
     this.formDescription = product.description;
-    this.formPrice = Number(product.price);
-    this.formImageFile = null;
+    this.formPrice       = Number(product.price);
+    this.formImageFile   = null;
     this.formImagePreview = (product as any).imageUrl || null;
   }
 
   closeForm(): void {
-    this.showForm = false;
-    this.editingProduct = null;
-    this.formImageFile = null;
+    this.showForm        = false;
+    this.editingProduct  = null;
+    this.formImageFile   = null;
     this.formImagePreview = null;
   }
 
   onImageSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      // Validate type
-      if (!file.type.startsWith('image/')) {
-        this.showToast('Please select an image file', 'error');
-        return;
-      }
-      // Validate size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        this.showToast('Image must be under 5MB', 'error');
-        return;
-      }
-      this.formImageFile = file;
-      // Show preview
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.formImagePreview = e.target.result;
-      };
-      reader.readAsDataURL(file);
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+      this.showToast('Please select an image file', 'error');
+      return;
     }
+    if (file.size > 5 * 1024 * 1024) {
+      this.showToast('Image must be under 5MB', 'error');
+      return;
+    }
+    this.formImageFile = file;
+    const reader = new FileReader();
+    reader.onload = (e: any) => { this.formImagePreview = e.target.result; };
+    reader.readAsDataURL(file);
   }
 
   removeImage(): void {
-    this.formImageFile = null;
+    this.formImageFile   = null;
     this.formImagePreview = null;
   }
 
@@ -130,11 +141,10 @@ export class SellerDashboardComponent implements OnInit {
       this.showToast('Price must be greater than 0', 'error');
       return;
     }
-
     this.submitting = true;
 
     if (this.editingProduct) {
-      // Update
+      // UPDATE — PUT /api/products/{id}/upload
       this.productsService.updateProductWithImage(
         String(this.editingProduct.id),
         this.formName,
@@ -148,13 +158,19 @@ export class SellerDashboardComponent implements OnInit {
           this.loadProducts();
           this.showToast('Product updated! ✓');
         },
-        error: () => {
+        error: (err) => {
           this.submitting = false;
-          this.showToast('Failed to update product', 'error');
+          console.error('Update error:', err);
+          this.showToast(
+            err.status === 403
+              ? 'You can only edit your own products'
+              : 'Failed to update product',
+            'error'
+          );
         }
       });
     } else {
-      // Add
+      // ADD — POST /api/products/upload
       this.productsService.addProductWithImage(
         this.formName,
         this.formDescription,
@@ -167,8 +183,9 @@ export class SellerDashboardComponent implements OnInit {
           this.loadProducts();
           this.showToast('Product added! 🌿');
         },
-        error: () => {
+        error: (err) => {
           this.submitting = false;
+          console.error('Add error:', err);
           this.showToast('Failed to add product', 'error');
         }
       });
@@ -184,12 +201,20 @@ export class SellerDashboardComponent implements OnInit {
         this.loadProducts();
         this.showToast('Product deleted');
       },
-      error: () => this.showToast('Failed to delete', 'error')
+      error: (err) => {
+        this.deleteConfirmId = null;
+        this.showToast(
+          err.status === 403
+            ? 'You can only delete your own products'
+            : 'Failed to delete product',
+          'error'
+        );
+      }
     });
   }
 
   showToast(msg: string, type = 'success'): void {
-    this.toast = msg;
+    this.toast     = msg;
     this.toastType = type;
     setTimeout(() => this.toast = '', 3500);
   }

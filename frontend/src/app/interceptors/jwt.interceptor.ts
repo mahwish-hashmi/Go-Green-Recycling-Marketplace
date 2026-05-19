@@ -13,13 +13,14 @@ export class JwtInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token = localStorage.getItem('token');
 
-    // Always attach token if available.
-    // The old code was skipping login/register URLs — but that caused
-    // issues when token exists and we still need CORS preflight to work.
-    // Backend correctly ignores Authorization header on public endpoints.
     if (token) {
+      // IMPORTANT: When sending FormData (multipart), do NOT set Content-Type manually.
+      // The browser sets it automatically with the correct boundary string.
+      // Only set Authorization header — never touch Content-Type for FormData.
       const cloned = request.clone({
-        headers: request.headers.set('Authorization', 'Bearer ' + token)
+        setHeaders: {
+          Authorization: `Bearer ${token}`
+        }
       });
       return next.handle(cloned);
     }
