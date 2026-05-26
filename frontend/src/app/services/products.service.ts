@@ -9,7 +9,8 @@ export class ProductsService {
 
   constructor(private http: HttpClient) {}
 
-  // GET http://localhost:8080/api/products  (public)
+  // ── Public ────────────────────────────────────────────────────────
+
   getProducts(): Observable<Product[]> {
     return this.http.get<Product[]>(`${environment.API_URL}/products`);
   }
@@ -18,9 +19,24 @@ export class ProductsService {
     return this.http.get<Product>(`${environment.API_URL}/products/${id}`);
   }
 
+  /** Products listed by a specific seller (public store page) */
+  getProductsBySeller(username: string): Observable<Product[]> {
+    return this.http.get<Product[]>(
+      `${environment.API_URL}/products/seller/${username}`
+    );
+  }
+
+  // ── Seller: own products only ─────────────────────────────────────
+
+  /** Returns only the logged-in seller's products */
+  getMyProducts(): Observable<Product[]> {
+    return this.http.get<Product[]>(`${environment.API_URL}/seller/products`);
+  }
+
   /**
-   * Add product with optional image — sends as multipart/form-data.
-   * POST http://localhost:8080/api/products/upload
+   * Add a new product WITH optional image.
+   * POST /api/products/upload  (multipart/form-data)
+   * This is the CORRECT endpoint the seller dashboard must call.
    */
   addProductWithImage(
     name: string,
@@ -35,14 +51,15 @@ export class ProductsService {
     if (imageFile) {
       formData.append('image', imageFile, imageFile.name);
     }
+    // POST to /api/products/upload
     return this.http.post<Product>(
       `${environment.API_URL}/products/upload`, formData
     );
   }
 
   /**
-   * Update product with optional new image.
-   * PUT http://localhost:8080/api/products/{id}/upload
+   * Update an existing product WITH optional new image.
+   * PUT /api/products/{id}/upload  (multipart/form-data)
    */
   updateProductWithImage(
     id: string,
@@ -58,18 +75,22 @@ export class ProductsService {
     if (imageFile) {
       formData.append('image', imageFile, imageFile.name);
     }
+    // PUT to /api/products/{id}/upload
     return this.http.put<Product>(
       `${environment.API_URL}/products/${id}/upload`, formData
     );
   }
 
-  // JSON add/update (kept for backward compat)
+  // ── JSON variants (kept for fallback) ────────────────────────────
+
   addProduct(product: any): Observable<Product> {
     return this.http.post<Product>(`${environment.API_URL}/products`, product);
   }
 
   updateProduct(id: string, product: any): Observable<Product> {
-    return this.http.put<Product>(`${environment.API_URL}/products/${id}`, product);
+    return this.http.put<Product>(
+      `${environment.API_URL}/products/${id}`, product
+    );
   }
 
   deleteProduct(id: string): Observable<any> {

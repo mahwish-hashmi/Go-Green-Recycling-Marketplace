@@ -1,7 +1,1 @@
-{
-    "/api/*": {
-        "target": "{{EDUCATIVE_LIVE_VM_URL}}",
-        "secure": false,
-        "logLevel": "debug"
-    }
-}
+{}

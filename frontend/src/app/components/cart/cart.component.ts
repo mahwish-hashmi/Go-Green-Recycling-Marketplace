@@ -79,6 +79,8 @@ export class CartComponent implements OnInit {
   }
 
   checkout(): void {
+    if (!this.user || this.cartItems.length === 0) return;
+
     // Save order to localStorage for order history
     const order = {
       id: Date.now().toString(36).toUpperCase(),
@@ -94,9 +96,35 @@ export class CartComponent implements OnInit {
     const existing = JSON.parse(localStorage.getItem('gogreen_orders') || '[]');
     localStorage.setItem('gogreen_orders', JSON.stringify([order, ...existing]));
 
-    this.checkoutDone = true;
-    this.showToast('Order placed! Thank you 🌿');
-    setTimeout(() => { this.cartItems = []; }, 1500);
+    // Remove every item from the backend cart
+    const deleteRequests = this.cartItems.map(item =>
+      this.cartItemsService.deleteUserCartItem(
+        String(this.user!.id),
+        String(item.pk.product.id)
+      )
+    );
+
+    // Wait for all deletes to complete
+    let completed = 0;
+    deleteRequests.forEach(req => {
+      req.subscribe({
+        next: () => {
+          completed++;
+          if (completed === deleteRequests.length) {
+            this.cartItems = [];
+            this.checkoutDone = true;
+            this.showToast('Order placed! Thank you 🌿');
+          }
+        },
+        error: () => {
+          completed++;
+          if (completed === deleteRequests.length) {
+            this.cartItems = [];
+            this.checkoutDone = true;
+          }
+        }
+      });
+    });
   }
 
   itemTotal(item: CartItem): number {
